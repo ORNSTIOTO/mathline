@@ -1,0 +1,5 @@
+Checks: "linuxkernel-*,performance-*,-performance-no-int-to-ptr,readability-*,-readability-implicit-bool-conversion,-readability-braces-around-statements,-readability-identifier-length,clang-analyzer-*,cert-*,-cert-dcl37-c,-cert-err33-c,-cert-err34-c,misc-*,-misc-no-recursion,bugprone-*,-bugprone-reserved-identifier,-cert-dcl51-cpp,-bugprone-easily-swappable-parameters,-readability-magic-numbers,-misc-include-cleaner"
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+FormatStyle: none
+

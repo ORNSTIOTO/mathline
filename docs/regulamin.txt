@@ -1,0 +1,42 @@
+Ścieżka Game Development nie dopuszcza użycia gotowego silnika gier komputerowych w wersji 
+uruchomieniowej (runtime) gry. Kod gry może korzystać co najwyżej z frameworku spełniającego poniższe 
+założenia i ograniczenia.
+
+a) Framework może implementować, wspierać i ułatwiać tworzenie następujących kluczowych elementów 
+silnika gry:
+⚫ warstwa niezależności od platformy,
+⚫ zarządzanie pamięcią,
+⚫ matematyka grafiki komputerowej,
+⚫ parsery plików danych graficznych (tekstury 2D i sześcienne, siatki, materiały i animacje modeli 3D),
+⚫ generatory liczb pseudolosowych,
+⚫ rozszerzalność o własne formaty menedżer zasobów,
+⚫ renderer niskopoziomowy (rendering modeli 3D, shadery),
+⚫ detekcja kolizji prostych brył (prostopadłościany, sfery, bryły widoczności),
+⚫ HID (myszka, klawiatura, gamepad) – detekcja niskiego poziomu,
+⚫ audio – jednorazowe i sekwencyjne odtwarzanie dźwięków,
+⚫ obsługa komunikacji sieciowej,
+⚫ rendering tekstu.
+
+b) Framework nie może (z jednym wyjątkiem) implementować następujących kluczowych elementów silnika 
+gry – te elementy powinny być zaimplementowane przez zespół tworzący grę:
+⚫ rozstrzyganie kolizji i fizyka (punktu materialnego, bryły sztywnej itp.),
+⚫ animacja postaci (skinning, animacja szkieletowa, ragdoll, morph targets, itp.),
+⚫ sztuczna inteligencja (wyszukiwanie ścieżki, unikanie obiektów, zachowania sterujące, drzewa 
+zachowań, GOAP itp.),
+⚫ menedżer świata, poziomów, sceny,
+⚫ rendering efektów specjalnych (postprocessing, particle systems, decals, cienie),
+⚫ graf sceny, rozstrzyganie widoczności, optymalizacja oświetlenia i wyświetlania, LOD, podział 
+przestrzeni,
+⚫ front-end (HUD, GUI),
+⚫ HID wysokiego poziomu – wciśnięcia jednoczesne, sekwencje,
+⚫ system skryptów,
+⚫ system zdarzeń,
+⚫ model obiektowy świata i obiektów gry,
+⚫ gameplay, reguły, mechanika gracza, cele i zadania,
+⚫ shadery dla modeli oświetlenia innych niż Phonga-Blinna,
+⚫ rendering odroczony,
+⚫ rendering bazujący na fizyce.
+
+Spośród powyższych jeden element może być wybrany i dołączony przez zespół do projektu jako biblioteka, 
+narzędzie zewnętrzne. Musi na to pozwalać jego licencja. Wyjątek nie dotyczy zewnętrznych bibliotek entity 
+component system.
