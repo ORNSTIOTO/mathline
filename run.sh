@@ -1,2 +1,2 @@
-make && bin/ballgame
+make && bin/mathline
 
