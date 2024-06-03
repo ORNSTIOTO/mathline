@@ -57,6 +57,12 @@ const struct uie_button button_default_attributes = {
 	.text.string = NULL,
 };
 
+const struct uie_image image_default_attributes = {
+	.img.tint = (Color){ 255, 255, 255, 255 },
+	.img.transparency = 0,
+	.img.tex = { 0 },
+};
+
 static struct ui_object *ui_get_root(void)
 {
 	return &ui_objects.list[0];
@@ -189,6 +195,8 @@ void ui_set_ftext(struct ui_object *obj, const char *f, ...)
 
 	struct ui_text *text = &obj->data->label.text;
 
+	// FIXME Efficiency
+
 	if (text->string != NULL)
 		free(text->string);
 
@@ -203,33 +211,58 @@ void ui_set_ftext(struct ui_object *obj, const char *f, ...)
 	va_end(args);
 }
 
+void ui_set_image(struct ui_object *obj, const char *filename)
+{
+	if (obj == NULL || filename == NULL)
+		return;
+
+	struct ui_image *img = &obj->data->image.img;
+
+	if (img->tex.id != 0)
+		UnloadTexture(img->tex);
+
+	Image image = LoadImage(filename);
+	img->tex = LoadTextureFromImage(image);
+	UnloadImage(image);
+}
+
 static void set_default_class_attributes(struct ui_descriptor *descriptor)
 {
 	const void *list;
+	size_t size;
 	void *dest;
 
 	switch (descriptor->class) {
 	case UIC_CANVAS:
 		list = &canvas_default_attributes;
+		size = sizeof canvas_default_attributes;
 		dest = &descriptor->canvas;
 		break;
 	case UIC_FRAME:
 		list = &frame_default_attributes;
+		size = sizeof frame_default_attributes;
 		dest = &descriptor->frame;
 		break;
 	case UIC_LABEL:
 		list = &label_default_attributes;
+		size = sizeof label_default_attributes;
 		dest = &descriptor->label;
 		break;
 	case UIC_BUTTON:
 		list = &button_default_attributes;
+		size = sizeof button_default_attributes;
 		dest = &descriptor->button;
+		break;
+	case UIC_IMAGE:
+		list = &image_default_attributes;
+		size = sizeof image_default_attributes;
+		dest = &descriptor->image;
 		break;
 	default:
 		return;
 	}
 
-	memcpy(dest, list, sizeof *list);
+	memcpy(dest, list, size);
 }
 
 static void set_default_attributes(struct ui_descriptor *descriptor,
@@ -241,10 +274,24 @@ static void set_default_attributes(struct ui_descriptor *descriptor,
 	set_default_class_attributes(descriptor);
 }
 
+static void setup_button_handlers(struct ui_descriptor *button)
+{
+	// TODO Register click area
+}
+
 static void initialize_descriptor(struct ui_descriptor *descriptor,
 				  enum ui_class class)
 {
 	set_default_attributes(descriptor, class);
+
+	switch (descriptor->class) {
+	case UIC_BUTTON:
+	case UIC_IMAGEBUTTON:
+		setup_button_handlers(descriptor);
+		break;
+	default:
+		break;
+	}
 }
 
 struct ui_res ui_create(enum ui_class class, const char *name,
@@ -255,6 +302,9 @@ struct ui_res ui_create(enum ui_class class, const char *name,
 		return UIRES_BAD_ID;
 
 	size_t data_size = sizeof(struct ui_descriptor);
+
+	//   TODO: Make a large structure to index this type of data by class
+	// id, instead of writing switch statements to hardcode them.
 
 	switch (class) {
 	case UIC_NONE:
@@ -272,6 +322,9 @@ struct ui_res ui_create(enum ui_class class, const char *name,
 		data_size += sizeof(struct uie_button);
 		break;
 	case UIC_IMAGE:
+		data_size += sizeof(struct uie_image);
+		break;
+	case UIC_IMAGEBUTTON:
 		return (struct ui_res){ -EINVAL, NULL };
 	}
 
@@ -284,12 +337,27 @@ struct ui_res ui_create(enum ui_class class, const char *name,
 	return (struct ui_res){ 0, obj };
 }
 
+static void free_class_data(struct ui_descriptor *descriptor)
+{
+	switch (descriptor->class) {
+	case UIC_LABEL:
+		free(descriptor->label.text.string);
+		break;
+	case UIC_IMAGE:
+		//free(descriptor->image.img.data);
+		break;
+	default:
+		break;
+	}
+}
+
 static void ui_free(struct ui_object *obj)
 {
 	for (size_t i = 0; i < obj->child_count; ++i)
 		ui_free(obj->children[i]);
 
-	free(obj->children);
+	free_class_data(obj->data);
+	//free(obj->children);
 	free(obj->data);
 
 	remove_entry(obj->id);
@@ -400,6 +468,26 @@ static void ui_draw_button(const struct ui_descriptor *data)
 {
 }
 
+static void ui_draw_image(const struct ui_descriptor *data)
+{
+	const Texture2D tex = data->image.img.tex;
+	const Color tint = fix_color(data->image.img.tint, data->transparency);
+	const Rectangle src = {
+		.x = 0,
+		.y = 0,
+		.width = tex.width,
+		.height = tex.height,
+	};
+	const Rectangle dest = {
+		.x = data->_abs_position.x,
+		.y = data->_abs_position.y,
+		.width = data->_abs_size.x,
+		.height = data->_abs_size.y,
+	};
+	//DrawTextureRec(data->image.img.tex, rect, data->_abs_position, tint);
+	DrawTexturePro(tex, src, dest, (Vector2){ 0, 0 }, 0, tint);
+}
+
 static void ui_draw_single(const struct ui_descriptor *data)
 {
 	switch (data->class) {
@@ -411,6 +499,9 @@ static void ui_draw_single(const struct ui_descriptor *data)
 		break;
 	case UIC_BUTTON:
 		ui_draw_button(data);
+		break;
+	case UIC_IMAGE:
+		ui_draw_image(data);
 		break;
 	default:
 		break;
@@ -520,10 +611,18 @@ void ui_init(void)
 	veloc->data->transparency = 1;
 	veloc->data->label.text.font_size = stat_font_size;
 	veloc->data->label.text.color = stat_color;
+
+	struct ui_object *testimg = ui_create(UIC_IMAGE, "dumimg", root).object;
+	testimg->data->size.offset = (Vector2){ 400, 100 };
+	testimg->data->position.offset = (Vector2){ 300, 100 };
+	ui_set_image(testimg, "res/img/level_num_btn.png");
 }
 
 void update_stat_counters(void)
 {
+	//   NOTE: This is bad for performance; do not do this. Always keep a
+	// reference to an object somewhere outside of the function, for quick
+	// access. I am lazy and this will get rewritten anyway.
 	struct ui_object *fps = ui_get("fps");
 	struct ui_object *zoom = ui_get("zoom");
 	struct ui_object *target = ui_get("target");

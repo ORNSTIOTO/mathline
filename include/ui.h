@@ -1,5 +1,3 @@
-// NOTE: The following header needs -fms-extensions to compile.
-
 #ifndef __UI_H__
 #define __UI_H__
 
@@ -20,19 +18,55 @@ enum ui_class {
 	UIC_LABEL,
 	UIC_BUTTON,
 	UIC_IMAGE,
+	UIC_IMAGEBUTTON,
 };
 
 enum ui_font {
 	UIF_DEFAULT,
 };
 
+enum ui_txtalign_h {
+	UI_TXTAH_LEFT,
+	UI_TXTAH_CENTER,
+	UI_TXTAH_RIGHT,
+};
+
+enum ui_txtalign_v {
+	UI_TXTAV_TOP,
+	UI_TXTAV_CENTER,
+	UI_TXTAV_BOTTOM,
+};
+
+enum ui_image_scalemode {
+	UI_IMGSM_STRETCH,
+	UI_IMGSM_KEEPASPECT,
+};
+
+struct ui_descriptor;
+
 struct ui_text {
 	Color color;
 	float transparency;
 	enum ui_font font;
 	int font_size;
+	enum ui_txtalign_h align_horizontal;
+	enum ui_txtalign_v align_vertical;
 	size_t size; // bytes of text, NOT length
 	char *string;
+};
+
+struct ui_image {
+	Color tint;
+	float transparency;
+	enum ui_image_scalemode scalemode;
+	Texture2D tex;
+
+	float _aspect_ratio;
+};
+
+typedef void (*fbtnevt_t)(struct ui_descriptor *button);
+struct ui_button {
+	fbtnevt_t hover, hover_exit, lmb_up, lmb_down, clicked;
 };
 
 struct uie_canvas {};
@@ -43,8 +77,23 @@ struct uie_label {
 	struct ui_text text;
 };
 
+struct uie_textbox {
+	struct ui_text text;
+	struct ui_button btn;
+};
+
 struct uie_button {
 	struct ui_text text;
+	struct ui_button btn;
+};
+
+struct uie_image {
+	struct ui_image img;
+};
+
+struct uie_imagebutton {
+	struct ui_image img;
+	struct ui_button btn;
 };
 
 // The descriptor of an object.
@@ -77,10 +126,17 @@ struct ui_descriptor {
 		struct uie_frame frame;
 		struct uie_label label;
 		struct uie_button button;
+		struct uie_image image;
 	};
 
 	////////////
 	// ENGINE EXCLUSIVE! Do not read or modify.
+	struct {
+		_Bool has_text;
+		_Bool has_image;
+		_Bool is_clickable;
+	} meta;
+
 	Vector2 _abs_position, _abs_size; // relative to root, not the parent
 };
 
@@ -112,6 +168,7 @@ struct ui_res {
 void ui_set_parent(struct ui_object *obj, struct ui_object *parent);
 void ui_set_text(struct ui_object *obj, const char *s);
 void ui_set_ftext(struct ui_object *obj, const char *f, ...);
+void ui_set_image(struct ui_object *obj, const char *filename);
 
 struct ui_res ui_create(enum ui_class class, const char *name,
 			struct ui_object *parent);
