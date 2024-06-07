@@ -1,14 +1,14 @@
 #include "game.h"
 #include "player.h"
-#include "render.h"
-#include "physics.h"
 #include "gameconfig.h"
-#include "ui.h"
+
+#include "engine/render.h"
+#include "engine/physics.h"
+#include "engine/ui.h"
+
 #include <raylib.h>
 #include <raymath.h>
 #include <stdio.h>
-
-#include "hash.h"
 
 struct game game = { 0 };
 

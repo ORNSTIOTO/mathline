@@ -1,7 +1,7 @@
 #include "player.h"
 #include "game.h"
-#include "physics.h"
 #include "graph.h"
+#include "engine/physics.h"
 #include <raymath.h>
 #include <stdio.h>
 #include <string.h>

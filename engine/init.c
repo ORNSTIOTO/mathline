@@ -1,11 +1,9 @@
-#include "window.h"
+#include "engine/window.h"
 #include "game.h"
 #include "perfgoals.h"
 #include "gameconfig.h"
 #include <malloc.h>
 #include <raylib.h>
-
-#include "hash.h"
 
 struct window window = { 0 };
 

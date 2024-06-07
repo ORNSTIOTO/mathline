@@ -1,7 +1,7 @@
 #ifndef __GAME_H__
 #define __GAME_H__
 
-#include "window.h"
+#include "engine/window.h"
 #include <raylib.h>
 
 typedef float (*graph_t)(float);

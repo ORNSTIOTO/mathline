@@ -2,15 +2,15 @@ MAKE_DIR=$(PWD)
 
 RDIR:=$(MAKE_DIR)
 IDIR:=$(RDIR)/include
+EDIR:=$(RDIR)/engine
 GDIR:=$(RDIR)/game
-WDIR:=$(RDIR)/window
 ODIR:=obj
 
-WODIR:=$(WDIR)/$(ODIR)
+EODIR:=$(EDIR)/$(ODIR)
 GODIR:=$(GDIR)/$(ODIR)
 
 INCLUDES=$(wildcard $(IDIR)/*.h)
-WOBJS=$(wildcard $(WODIR)/*.o)
+EOBJS=$(wildcard $(EODIR)/*.o)
 GOBJS=$(wildcard $(GODIR)/*.o)
 
 BINPATH:=$(RDIR)/bin
@@ -27,17 +27,17 @@ LIBS:=-lraylib -lm
 export RDIR IDIR ODIR CC CFLAGS INCLUDES
 
 $(BIN): all | $(BINPATH)
-	$(CC) -o $@ $(WOBJS) $(GOBJS) $(LIBS)
+	$(CC) -o $@ $(EOBJS) $(GOBJS) $(LIBS)
 
 all:
-	$(MAKE) -C window -f window.mk
+	$(MAKE) -C engine -f engine.mk
 	$(MAKE) -C game -f game.mk
 
 $(BINPATH):
 	mkdir -p $@
 
 clean:
-	$(MAKE) -C window -f window.mk clean
+	$(MAKE) -C engine -f engine.mk clean
 	$(MAKE) -C game -f game.mk clean
 	$(RM) -f $(BIN)
 

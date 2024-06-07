@@ -1,8 +1,8 @@
-#include "ui.h"
+#include "engine/ui.h"
+#include "engine/hash.h"
 #include "game.h"
 #include "player.h"
 #include "errno.h"
-#include "hash.h"
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
@@ -475,8 +475,8 @@ static void ui_draw_image(const struct ui_descriptor *data)
 	const Rectangle src = {
 		.x = 0,
 		.y = 0,
-		.width = tex.width,
-		.height = tex.height,
+		.width = (float)tex.width,
+		.height = (float)tex.height,
 	};
 	const Rectangle dest = {
 		.x = data->_abs_position.x,

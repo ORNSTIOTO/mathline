@@ -1,6 +1,9 @@
 #include "graph.h"
 #include "game.h"
 
+// https://github.com/raysan5/raylib/blob/f05316b11d0a1b17088e3e75e4682e2e7ce54b91/examples/textures/textures_polygon.c#L114
+// DrawTexturePoly() - Could help drawing the graph texture.
+
 extern struct game game;
 
 static float scr_border_left(void)
