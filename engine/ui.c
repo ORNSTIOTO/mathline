@@ -346,6 +346,9 @@ static void free_class_data(struct ui_descriptor *descriptor)
 	case UIC_IMAGE:
 		//free(descriptor->image.img.data);
 		break;
+	case UIC_BUTTON:
+		free(descriptor->button.text.string);
+		break;
 	default:
 		break;
 	}
@@ -453,6 +456,33 @@ static void draw_text(const struct ui_text *text, Vector2 pos)
 	DrawText(text->string, (int)pos.x, (int)pos.y, text->font_size, color);
 }
 
+static void draw_bound_text(const struct ui_text *text, Vector2 pos,
+			    Vector2 bounds)
+{
+	// TODO Text auto-wrap, since it must be within bounds
+	draw_text(text, pos);
+}
+
+static void draw_image(const struct ui_image *img, Vector2 pos, Vector2 size,
+		       float transparency)
+{
+	const Texture2D tex = img->tex;
+	const Color tint = fix_color(img->tint, transparency);
+	const Rectangle src = {
+		.x = 0,
+		.y = 0,
+		.width = (float)tex.width,
+		.height = (float)tex.height,
+	};
+	const Rectangle dest = {
+		.x = pos.x,
+		.y = pos.y,
+		.width = size.x,
+		.height = size.y,
+	};
+	DrawTexturePro(tex, src, dest, (Vector2){ 0, 0 }, 0, tint);
+}
+
 static void ui_draw_frame(const struct ui_descriptor *data)
 {
 	draw_rect(data);
@@ -461,31 +491,19 @@ static void ui_draw_frame(const struct ui_descriptor *data)
 static void ui_draw_label(const struct ui_descriptor *data)
 {
 	draw_rect(data);
-	draw_text(&data->label.text, data->_abs_position);
+	draw_bound_text(&data->label.text, data->_abs_position,
+			data->_abs_size);
 }
 
 static void ui_draw_button(const struct ui_descriptor *data)
 {
+	ui_draw_label(data);
 }
 
 static void ui_draw_image(const struct ui_descriptor *data)
 {
-	const Texture2D tex = data->image.img.tex;
-	const Color tint = fix_color(data->image.img.tint, data->transparency);
-	const Rectangle src = {
-		.x = 0,
-		.y = 0,
-		.width = (float)tex.width,
-		.height = (float)tex.height,
-	};
-	const Rectangle dest = {
-		.x = data->_abs_position.x,
-		.y = data->_abs_position.y,
-		.width = data->_abs_size.x,
-		.height = data->_abs_size.y,
-	};
-	//DrawTextureRec(data->image.img.tex, rect, data->_abs_position, tint);
-	DrawTexturePro(tex, src, dest, (Vector2){ 0, 0 }, 0, tint);
+	draw_image(&data->image.img, data->_abs_position, data->_abs_size,
+		   data->transparency);
 }
 
 static void ui_draw_single(const struct ui_descriptor *data)

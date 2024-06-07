@@ -1,6 +1,7 @@
 #ifndef __UI_H__
 #define __UI_H__
 
+#include "engine/evtcon.h"
 #include <raylib.h>
 #include <stddef.h>
 
@@ -64,9 +65,10 @@ struct ui_image {
 	float _aspect_ratio;
 };
 
-typedef void (*fbtnevt_t)(struct ui_descriptor *button);
 struct ui_button {
-	fbtnevt_t hover, hover_exit, lmb_up, lmb_down, clicked;
+	struct {
+		struct event hover, hover_exit, lmb_down, lmb_up, clicked;
+	} events;
 };
 
 struct uie_canvas {};

@@ -2,17 +2,20 @@
 #define __EVTCON_H__
 
 #include <stddef.h>
+#include <stdarg.h>
 
-#define CONNECTION_INCREMENT 8
-
-typedef void *(*fevtcon_t)(void *);
+typedef void (*fevtcon_t)(void *args);
 
 struct connection {
 	fevtcon_t f;
+	struct event *evtgroup;
+
+	_Bool connected;
 };
 
 struct event {
 	size_t ncon;
+	size_t size;
 	struct connection *connections;
 };
 
@@ -20,7 +23,6 @@ int evt_connect(struct event *evt, fevtcon_t f);
 
 int evt_disconnect(struct connection *con);
 
-// TODO
+void evt_fire(struct event *evt, void *args);
 
 #endif
-
