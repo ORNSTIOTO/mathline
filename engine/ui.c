@@ -443,11 +443,13 @@ static void recalculate_absolute_position(struct ui_descriptor *subject,
 	subject->_abs_position.x =
 		parent->_abs_position.x +
 		parent->_abs_size.x * subject->position.scale.x +
-		subject->position.offset.x;
+		subject->position.offset.x -
+		subject->_abs_size.x * subject->anchor.x;
 	subject->_abs_position.y =
 		parent->_abs_position.y +
 		parent->_abs_size.y * subject->position.scale.y +
-		subject->position.offset.y;
+		subject->position.offset.y -
+		subject->_abs_size.y * subject->anchor.y;
 }
 
 static void recalculate_absolute_size(struct ui_descriptor *subject,
@@ -678,7 +680,8 @@ void ui_init(void)
 	struct ui_object *root = ui_get_root();
 
 	struct ui_object *rrect = ui_create(UIC_FRAME, "red", root).object;
-	rrect->data->position.offset = (Vector2){ 0, 0 };
+	rrect->data->anchor = (Vector2){ 1.0F, 0 };
+	rrect->data->position = (UDim2){ { -1.0F, 0 }, { 1, 0 } };
 	rrect->data->size = (UDim2){ { 230, 0 }, { 0, 1 } };
 	rrect->data->color = RED;
 
@@ -734,8 +737,9 @@ void ui_init(void)
 	veloc->data->label.text.color = stat_color;
 
 	struct ui_object *testimg = ui_create(UIC_IMAGE, "dumimg", root).object;
-	testimg->data->size.offset = (Vector2){ 400, 100 };
-	testimg->data->position.offset = (Vector2){ 300, 100 };
+	testimg->data->size.offset = (Vector2){ 100, 100 };
+	testimg->data->position.scale = (Vector2){ 0.5F, 0.5F };
+	testimg->data->anchor = (Vector2){ 0.5F, 0.5F };
 	ui_set_image(testimg, "res/img/level_num_btn.png");
 
 	struct ui_object *button = ui_create(UIC_BUTTON, "btn", root).object;
