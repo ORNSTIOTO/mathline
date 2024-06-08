@@ -44,6 +44,9 @@ static void handle_input(void)
 	const float mdx = mouse_delta.x;
 	const float mdy = mouse_delta.y;
 
+	// clicking
+	ui_resolve_mouse();
+
 	// dragging
 	if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && (mdx != 0 || mdy != 0)) {
 		game.camera.target.x -= mdx / game.camera.zoom;

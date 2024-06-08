@@ -43,7 +43,9 @@ enum ui_image_scalemode {
 	UI_IMGSM_KEEPASPECT,
 };
 
-struct ui_descriptor;
+struct evtbtn_args {
+	struct ui_object *button;
+};
 
 struct ui_text {
 	Color color;
@@ -134,10 +136,11 @@ struct ui_descriptor {
 	////////////
 	// ENGINE EXCLUSIVE! Do not read or modify.
 	struct {
+		_Bool valid;
 		_Bool has_text;
 		_Bool has_image;
 		_Bool is_clickable;
-	} meta;
+	} _meta;
 
 	Vector2 _abs_position, _abs_size; // relative to root, not the parent
 };
@@ -177,6 +180,8 @@ struct ui_res ui_create(enum ui_class class, const char *name,
 int ui_delete(const char *name);
 
 struct ui_object *ui_get(const char *by_name);
+
+void ui_resolve_mouse(void);
 
 void update_stat_counters(void);
 void redraw_ui(void);

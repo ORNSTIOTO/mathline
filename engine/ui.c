@@ -19,6 +19,12 @@ struct {
 	// list[0] is always the root!
 } ui_objects;
 
+struct {
+	size_t nmemb;
+	struct ui_object *buttons[256]; // TODO dynamic
+	struct ui_object *down_on; // used for the "Clicked" event
+} click_area;
+
 const struct ui_descriptor desc_default_attributes = {
 	.class = UIC_NONE,
 	.anchor = (Vector2){ 0, 0 },
@@ -26,10 +32,17 @@ const struct ui_descriptor desc_default_attributes = {
 	.size = (UDim2){ { 200, 100 }, { 0, 0 } },
 	.color = (Color){ 192, 192, 192, 0 },
 	.transparency = 0,
-
+	
 	.invincible = 0,
 	.visible = 1,
 	.hidden = 0,
+
+	._meta = {
+		.valid = 0,
+		.has_image = 0,
+		.has_text = 0,
+		.is_clickable = 0,
+	},
 
 	._abs_position = (Vector2){ 0, 0 },
 	._abs_size = (Vector2){ 0, 0 },
@@ -272,22 +285,31 @@ static void set_default_attributes(struct ui_descriptor *descriptor,
 	descriptor->class = class;
 
 	set_default_class_attributes(descriptor);
+	descriptor->_meta.valid = 1;
 }
 
-static void setup_button_handlers(struct ui_descriptor *button)
+static void setup_button_handlers(struct ui_object *button)
 {
 	// TODO Register click area
+	click_area.buttons[click_area.nmemb++] = button;
 }
 
 static void initialize_descriptor(struct ui_descriptor *descriptor,
 				  enum ui_class class)
 {
 	set_default_attributes(descriptor, class);
+}
 
-	switch (descriptor->class) {
+static void initialize_object(struct ui_object *object, enum ui_class class)
+{
+	struct ui_descriptor *data = object->data;
+
+	initialize_descriptor(data, class);
+
+	switch (data->class) {
 	case UIC_BUTTON:
 	case UIC_IMAGEBUTTON:
-		setup_button_handlers(descriptor);
+		setup_button_handlers(object);
 		break;
 	default:
 		break;
@@ -331,7 +353,7 @@ struct ui_res ui_create(enum ui_class class, const char *name,
 	struct ui_descriptor *descriptor = calloc(1, data_size);
 	struct ui_object *obj = add_entry(id, descriptor);
 
-	initialize_descriptor(descriptor, class);
+	initialize_object(obj, class);
 	ui_set_parent(obj, parent);
 
 	return (struct ui_res){ 0, obj };
@@ -377,10 +399,9 @@ int ui_delete(const char *name)
 	struct ui_object *obj = &ui_objects.list[idx];
 	struct ui_descriptor *data = obj->data;
 
+	data->_meta.valid = 0;
+
 	if (data->invincible)
-		//   TODO Make this and similar checks a function,
-		// so that the codebase does not depend
-		// on those names which might change.
 		return -EINVAL;
 
 	ui_free(obj);
@@ -555,21 +576,103 @@ void redraw_ui(void)
 	ui_draw_tree(root, NULL);
 }
 
+static _Bool contained_within(Vector2 point, Vector2 pos, Vector2 size)
+{
+	return point.x >= pos.x && point.x <= pos.x + size.x &&
+	       point.y >= pos.y && point.y <= pos.y + size.y;
+}
+
+static struct ui_object *ui_find_hovered_button(void)
+{
+	const Vector2 mp = GetMousePosition();
+
+	for (size_t i = 0; i < click_area.nmemb; ++i) {
+		struct ui_object *button = click_area.buttons[i];
+		const struct ui_descriptor *data = button->data;
+		if (contained_within(mp, data->_abs_position, data->_abs_size))
+			return button;
+	}
+
+	return NULL;
+}
+
+void ui_resolve_mouse(void)
+{
+	const _Bool lmb_up = IsMouseButtonUp(MOUSE_LEFT_BUTTON);
+	const _Bool lmb_down = IsMouseButtonDown(MOUSE_LEFT_BUTTON);
+
+	struct evtbtn_args args = {};
+
+	if (click_area.down_on == NULL && !lmb_down)
+		click_area.down_on = NULL;
+
+	struct ui_object *down_on = click_area.down_on;
+
+	if (down_on == NULL && lmb_down) {
+		struct ui_object *button = ui_find_hovered_button();
+		if (button == NULL)
+			return;
+
+		click_area.down_on = args.button = button;
+		evt_fire(&button->data->button.btn.events.lmb_down, &args);
+
+		return;
+	}
+
+	if (down_on != NULL && !lmb_down) {
+		struct ui_object *button = ui_find_hovered_button();
+		const _Bool hovers = button == down_on;
+
+		args.button = down_on;
+
+		evt_fire(&down_on->data->button.btn.events.lmb_up, &args);
+		if (button == down_on)
+			evt_fire(&button->data->button.btn.events.clicked,
+				 &args);
+
+		click_area.down_on = NULL;
+
+		return;
+	}
+}
+
 static void ui_create_root(void)
 {
 	struct ui_object *root = ui_create(UIC_CANVAS, "root", NULL).object;
 	root->data->size.offset = root->data->_abs_size = get_screen_dim();
 }
 
-static void ui_create_objlist(void)
+static void ui_setup_clickareas(void)
+{
+	click_area.nmemb = 0;
+	click_area.down_on = NULL;
+}
+
+static void ui_setup_objlist(void)
 {
 	ui_objects.count = 0;
 	ui_objects.list = malloc(sizeof *ui_objects.list * UI_MAX_OBJECTS);
 }
 
+static void testbtn_event_function_c(void *args)
+{
+	printf("Clicked!\n");
+}
+
+static void testbtn_event_function_d(void *args)
+{
+	printf("Down!\n");
+}
+
+static void testbtn_event_function_u(void *args)
+{
+	printf("Up!\n");
+}
+
 void ui_init(void)
 {
-	ui_create_objlist();
+	ui_setup_objlist();
+	ui_setup_clickareas();
 	ui_create_root();
 
 	struct ui_object *root = ui_get_root();
@@ -634,6 +737,19 @@ void ui_init(void)
 	testimg->data->size.offset = (Vector2){ 400, 100 };
 	testimg->data->position.offset = (Vector2){ 300, 100 };
 	ui_set_image(testimg, "res/img/level_num_btn.png");
+
+	struct ui_object *button = ui_create(UIC_BUTTON, "btn", root).object;
+	button->data->size.offset = (Vector2){ 150, 80 };
+	button->data->position.offset = (Vector2){ 250, 500 };
+	ui_set_text(button, "click me!");
+
+	struct event *e_c = &button->data->button.btn.events.clicked;
+	struct event *e_d = &button->data->button.btn.events.lmb_down;
+	struct event *e_u = &button->data->button.btn.events.lmb_up;
+
+	evt_connect(e_c, testbtn_event_function_c);
+	evt_connect(e_d, testbtn_event_function_d);
+	evt_connect(e_u, testbtn_event_function_u);
 }
 
 void update_stat_counters(void)
