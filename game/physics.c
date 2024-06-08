@@ -14,14 +14,14 @@ static void player_update(const float fdt)
 {
 	struct player *player = game.player;
 
-	printf("x force: %f\n", player->body.force.x);
+	//	printf("x force: %f\n", player->body.force.x);
 
 	player->body.linear_velocity.x += player->body.linear_accel.x * fdt;
 	player->body.linear_velocity.y += PHYSICS_G * fdt;
 
-	printf("linear velocity: { %f, %f }    linear accel: { %f, %f }\n",
-	       player->body.linear_velocity.x, player->body.linear_velocity.y,
-	       player->body.linear_accel.x, player->body.linear_accel.y);
+	//	printf("linear velocity: { %f, %f }    linear accel: { %f, %f }\n",
+	//	       player->body.linear_velocity.x, player->body.linear_velocity.y,
+	//	       player->body.linear_accel.x, player->body.linear_accel.y);
 
 	player->pos.x += player->body.linear_velocity.x * fdt;
 	player->pos.y += player->body.linear_velocity.y * fdt;
@@ -45,9 +45,9 @@ static void player_update(const float fdt)
 		player->pos.x -= vel_normal.x * hit_distance.x;
 		player->pos.y -= vel_normal.y * hit_distance.y;
 
-		printf("hit_distance: { %f, %f }\nvel_normal: { %f, %f }\n",
-		       hit_distance.x, hit_distance.y, vel_normal.x,
-		       vel_normal.y);
+		//printf("hit_distance: { %f, %f }\nvel_normal: { %f, %f }\n",
+		//       hit_distance.x, hit_distance.y, vel_normal.x,
+		//       vel_normal.y);
 
 		//for (;;)
 		//	;
