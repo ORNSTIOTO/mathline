@@ -1,9 +1,11 @@
 #include "engine/ui.h"
 #include "engine/hash.h"
+#include "engine/arraylist.h"
 #include "game.h"
 #include "player.h"
 #include "errno.h"
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <malloc.h>
 
@@ -25,8 +27,13 @@ struct {
 	struct ui_object *down_on; // used for the "Clicked" event
 } click_area;
 
+struct {
+	struct arraylist fonts; // <struct ui_font>
+	struct arraylist images; // <Texture2D>
+} textures;
+
 const struct ui_descriptor desc_default_attributes = {
-	.class = UIC_NONE,
+.class = UIC_NONE,
 	.anchor = (Vector2){ 0, 0 },
 	.position = (UDim2){ { 0, 0 }, { 0, 0 } },
 	.size = (UDim2){ { 200, 100 }, { 0, 0 } },
@@ -55,8 +62,12 @@ const struct uie_frame frame_default_attributes = {};
 const struct uie_label label_default_attributes = {
 	.text.color = BLACK,
 	.text.transparency = 0,
-	.text.font = UIF_DEFAULT,
-	.text.font_size = 16,
+	.text.font = {
+		.type = UIF_DEFAULT,
+		.data = NULL,
+		.size = 16,
+		.spacing_px = 2,
+	},
 	.text.size = 0,
 	.text.string = NULL,
 };
@@ -64,8 +75,12 @@ const struct uie_label label_default_attributes = {
 const struct uie_button button_default_attributes = {
 	.text.color = BLACK,
 	.text.transparency = 0,
-	.text.font = UIF_DEFAULT,
-	.text.font_size = 16,
+	.text.font = {
+		.type = UIF_DEFAULT,
+		.data = NULL,
+		.size = 16,
+		.spacing_px = 2,
+	},
 	.text.size = 0,
 	.text.string = NULL,
 };
@@ -152,6 +167,58 @@ static int find_entry(unsigned id)
 	return -1;
 }
 
+static unsigned calculate_font_id(const char *fntname, size_t fntsize)
+{
+	char *dup = strdup(fntname);
+	dup[0] = (char)fntsize;
+	const unsigned id = calculate_id(dup);
+	free(dup);
+	return id;
+}
+
+static Font ui_rawfont_create(const char *fntname, size_t fnt_size)
+{
+	const Font font = LoadFontEx(fntname, (int)fnt_size, 0, 256);
+	return font;
+}
+
+static struct ui_font ui_font_create(const char *fntname, size_t fntsize)
+{
+	const Font font = ui_rawfont_create(fntname, fntsize);
+	Font *fontp = malloc(sizeof font);
+	memcpy(fontp, &font, sizeof font);
+
+	const struct ui_font fontdata = {
+		.id = calculate_font_id(fntname, fntsize),
+		.type = UIF_RESOURCE,
+		.data = fontp,
+		.size = (float)fntsize,
+		.spacing_px = 2,
+	};
+	return fontdata;
+}
+
+static struct ui_font *ui_font_obtain(const char *fntname, size_t fntsize,
+				      _Bool *created)
+{
+	struct arraylist *fntlist = &textures.fonts;
+
+	const unsigned id = calculate_font_id(fntname, fntsize);
+	const size_t idx = arraylist_id_locate(fntlist, id);
+	if (idx == -1U) {
+		const struct ui_font font = ui_font_create(fntname, fntsize);
+		const size_t push_idx = arraylist_pushback(fntlist, &font);
+
+		*created = 1;
+		return arraylist_get(fntlist, push_idx);
+	}
+
+	struct ui_font *font = arraylist_get(fntlist, idx);
+
+	*created = 0;
+	return font;
+}
+
 static void register_child(struct ui_object *parent, struct ui_object *child)
 {
 	// TODO Add error checking for child_count and dynamic allocation.
@@ -224,6 +291,28 @@ void ui_set_ftext(struct ui_object *obj, const char *f, ...)
 	va_end(args);
 }
 
+void ui_set_font(struct ui_object *obj, const char *fntname, size_t fntsize)
+{
+	if (obj == NULL || fntname == NULL)
+		return;
+
+	_Bool created;
+	struct ui_font *font = ui_font_obtain(fntname, fntsize, &created);
+	font->size = (float)fntsize;
+
+	if (created) {
+		struct arraylist *fonts = &textures.fonts;
+		struct ui_font old = obj->data->label.text.font;
+		const size_t location = arraylist_id_locate(fonts, old.id);
+		if (location != -1U) {
+			UnloadFont(*old.data);
+			arraylist_remove(fonts, location);
+		}
+	}
+
+	memcpy(&obj->data->label.text.font, font, sizeof *font);
+}
+
 void ui_set_image(struct ui_object *obj, const char *filename)
 {
 	if (obj == NULL || filename == NULL)
@@ -234,7 +323,7 @@ void ui_set_image(struct ui_object *obj, const char *filename)
 	if (img->tex.id != 0)
 		UnloadTexture(img->tex);
 
-	Image image = LoadImage(filename);
+	const Image image = LoadImage(filename);
 	img->tex = LoadTextureFromImage(image);
 	UnloadImage(image);
 }
@@ -475,8 +564,11 @@ static void draw_rect(const struct ui_descriptor *data)
 
 static void draw_text(const struct ui_text *text, Vector2 pos)
 {
+	const _Bool use_default = text->font.type == UIF_DEFAULT;
+	const Font font = use_default ? GetFontDefault() : *text->font.data;
 	const Color color = fix_color(text->color, text->transparency);
-	DrawText(text->string, (int)pos.x, (int)pos.y, text->font_size, color);
+	DrawTextEx(font, text->string, pos, text->font.size,
+		   text->font.spacing_px, color);
 }
 
 static void draw_bound_text(const struct ui_text *text, Vector2 pos,
@@ -656,6 +748,29 @@ static void ui_setup_objlist(void)
 	ui_objects.list = malloc(sizeof *ui_objects.list * UI_MAX_OBJECTS);
 }
 
+static void ui_setup_texture_buckets(void)
+{
+	struct ui_font font;
+	size_t font_id_off = (uintptr_t)&font - (uintptr_t)&font.id;
+	size_t font_id_len = sizeof(font.id);
+
+	Texture2D tex;
+	size_t tex_id_off = (uintptr_t)&tex - (uintptr_t)&tex.id;
+	size_t tex_id_len = sizeof(tex.id);
+
+	textures.fonts = arraylist_create(sizeof font, 1);
+	arraylist_provide_mapping(
+		&textures.fonts,
+		(struct arraylist_map){ .id.offset = font_id_off,
+					.id.length = font_id_len });
+
+	textures.images = arraylist_create(sizeof tex, 1);
+	arraylist_provide_mapping(
+		&textures.images,
+		(struct arraylist_map){ .id.offset = tex_id_off,
+					.id.length = tex_id_len });
+}
+
 static void testbtn_event_function_c(void *args)
 {
 	printf("Clicked!\n");
@@ -675,6 +790,7 @@ void ui_init(void)
 {
 	ui_setup_objlist();
 	ui_setup_clickareas();
+	ui_setup_texture_buckets();
 	ui_create_root();
 
 	struct ui_object *root = ui_get_root();
@@ -699,42 +815,46 @@ void ui_init(void)
 	title->data->position.offset = (Vector2){ 0, 0 };
 	title->data->size = (UDim2){ { 0, 60 }, { 1, 0 } };
 	title->data->transparency = 1;
-	title->data->label.text.font_size = 46;
 	title->data->label.text.color = ORANGE;
 	ui_set_text(
 		title,
 		"Mathline [Still have to implement the line auto-wrapping]");
+	ui_set_font(title, "res/fnt/comic.ttf", 46);
 
 	const Color stat_color = RAYWHITE;
-	const int stat_font_size = 20;
+	const float stat_font_size = 20;
 
 	struct ui_object *fps = ui_create(UIC_LABEL, "fps", root).object;
 	fps->data->position.offset = (Vector2){ 10, 70 };
 	fps->data->size = (UDim2){ { 0, 20 }, { 1, 0 } };
 	fps->data->transparency = 1;
-	fps->data->label.text.font_size = stat_font_size;
+	fps->data->label.text.font.size = stat_font_size;
 	fps->data->label.text.color = stat_color;
+	ui_set_font(fps, "res/fnt/chalkduster.ttf", 20);
 
 	struct ui_object *zoom = ui_create(UIC_LABEL, "zoom", root).object;
 	zoom->data->position.offset = (Vector2){ 10, 90 };
 	zoom->data->size = (UDim2){ { 0, 20 }, { 1, 0 } };
 	zoom->data->transparency = 1;
-	zoom->data->label.text.font_size = stat_font_size;
+	zoom->data->label.text.font.size = stat_font_size;
 	zoom->data->label.text.color = stat_color;
+	ui_set_font(zoom, "res/fnt/chalkduster.ttf", 20);
 
 	struct ui_object *target = ui_create(UIC_LABEL, "target", root).object;
 	target->data->position.offset = (Vector2){ 10, 110 };
 	target->data->size = (UDim2){ { 0, 20 }, { 1, 0 } };
 	target->data->transparency = 1;
-	target->data->label.text.font_size = stat_font_size;
+	target->data->label.text.font.size = stat_font_size;
 	target->data->label.text.color = stat_color;
+	ui_set_font(target, "res/fnt/chalkduster.ttf", 20);
 
 	struct ui_object *veloc = ui_create(UIC_LABEL, "veloc", root).object;
 	veloc->data->position.offset = (Vector2){ 10, 130 };
 	veloc->data->size = (UDim2){ { 0, 20 }, { 1, 0 } };
 	veloc->data->transparency = 1;
-	veloc->data->label.text.font_size = stat_font_size;
+	veloc->data->label.text.font.size = stat_font_size;
 	veloc->data->label.text.color = stat_color;
+	ui_set_font(veloc, "res/fnt/chalkduster.ttf", 20);
 
 	struct ui_object *testimg = ui_create(UIC_IMAGE, "dumimg", root).object;
 	testimg->data->size.offset = (Vector2){ 100, 100 };
@@ -743,9 +863,10 @@ void ui_init(void)
 	ui_set_image(testimg, "res/img/level_num_btn.png");
 
 	struct ui_object *button = ui_create(UIC_BUTTON, "btn", root).object;
-	button->data->size.offset = (Vector2){ 150, 80 };
+	button->data->size.offset = (Vector2){ 300, 80 };
 	button->data->position.offset = (Vector2){ 250, 500 };
-	ui_set_text(button, "click me!");
+	ui_set_text(button, "click me!\n\nf(x) = 2 * x + 5");
+	ui_set_font(button, "res/fnt/chalkduster.ttf", 24);
 
 	struct event *e_c = &button->data->button.btn.events.clicked;
 	struct event *e_d = &button->data->button.btn.events.lmb_down;
