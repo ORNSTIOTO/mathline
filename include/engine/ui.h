@@ -185,6 +185,9 @@ void ui_set_image(struct ui_object *obj, const char *filename);
 
 void ui_set_default_font(const char *fntname);
 
+struct ui_res ui_create_ext(enum ui_class class, const char *name,
+			    struct ui_object *parent,
+			    struct ui_descriptor description);
 struct ui_res ui_create(enum ui_class class, const char *name,
 			struct ui_object *parent);
 int ui_delete(const char *name);

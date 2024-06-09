@@ -1,6 +1,8 @@
 #include "player.h"
 #include "game.h"
 #include "graph.h"
+#include "engine/tex.h"
+
 #include "engine/physics.h"
 #include <raymath.h>
 #include <stdio.h>
@@ -51,7 +53,9 @@ void player_init(void)
 {
 	game.player = &player;
 
-	player.radius = 20.0F;
-	player.color = (Color){ 20, 120, 255, 255 };
 	player.pos = (Vector2){ 0, -256 };
+	player.radius = 20.0F;
+	player.tint = (Color){ 255, 255, 255, 255 };
+
+	texture_load(&player.tex, "res/img/ball/puffer.png");
 }

@@ -5,8 +5,10 @@
 
 struct player {
 	Vector2 pos, old_pos;
-	float radius, angle;
-	Color color;
+	float radius, rotation;
+
+	Texture2D tex;
+	Color tint;
 
 	struct {
 		Vector2 linear_velocity, linear_accel;

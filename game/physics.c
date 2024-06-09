@@ -28,7 +28,7 @@ static void player_update(const float fdt)
 
 	player->body.angular_velocity +=
 		player->body.linear_velocity.x * fdt / player->radius;
-	player->angle += player->body.angular_velocity * fdt;
+	player->rotation += player->body.angular_velocity * fdt;
 
 	Vector2 coll;
 	if (player_collides(&coll)) {

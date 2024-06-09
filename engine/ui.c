@@ -1,4 +1,5 @@
 #include "engine/ui.h"
+#include "engine/tex.h"
 #include "engine/hash.h"
 #include "engine/arraylist.h"
 #include "game.h"
@@ -27,9 +28,9 @@ struct {
 	struct ui_object *down_on; // used for the "Clicked" event
 } click_area;
 
-struct {
+struct textures {
 	struct arraylist fonts; // <struct ui_font>
-	struct arraylist images; // <Texture2D>
+	struct arraylist images; // <Texture2D>  - NOT IMPL
 } textures;
 
 const struct ui_descriptor desc_default_attributes = {
@@ -323,9 +324,7 @@ void ui_set_image(struct ui_object *obj, const char *filename)
 	if (img->tex.id != 0)
 		UnloadTexture(img->tex);
 
-	const Image image = LoadImage(filename);
-	img->tex = LoadTextureFromImage(image);
-	UnloadImage(image);
+	texture_load(&img->tex, filename);
 }
 
 static void set_default_class_attributes(struct ui_descriptor *descriptor)
@@ -393,8 +392,6 @@ static void initialize_object(struct ui_object *object, enum ui_class class)
 {
 	struct ui_descriptor *data = object->data;
 
-	initialize_descriptor(data, class);
-
 	switch (data->class) {
 	case UIC_BUTTON:
 	case UIC_IMAGEBUTTON:
@@ -405,8 +402,10 @@ static void initialize_object(struct ui_object *object, enum ui_class class)
 	}
 }
 
-struct ui_res ui_create(enum ui_class class, const char *name,
-			struct ui_object *parent)
+static struct ui_res __int_ui_create(enum ui_class class, const char *name,
+				     struct ui_object *parent,
+				     struct ui_descriptor description,
+				     _Bool valid_desc)
 {
 	const unsigned id = calculate_id(name);
 	if (id_exists(id))
@@ -442,10 +441,25 @@ struct ui_res ui_create(enum ui_class class, const char *name,
 	struct ui_descriptor *descriptor = calloc(1, data_size);
 	struct ui_object *obj = add_entry(id, descriptor);
 
+	set_default_attributes(descriptor, class);
 	initialize_object(obj, class);
 	ui_set_parent(obj, parent);
 
 	return (struct ui_res){ 0, obj };
+}
+
+struct ui_res ui_create_ext(enum ui_class class, const char *name,
+			    struct ui_object *parent,
+			    struct ui_descriptor description)
+{
+	return __int_ui_create(class, name, parent, description, 1);
+}
+
+struct ui_res ui_create(enum ui_class class, const char *name,
+			struct ui_object *parent)
+{
+	struct ui_descriptor description = {};
+	return __int_ui_create(class, name, parent, description, 0);
 }
 
 static void free_class_data(struct ui_descriptor *descriptor)
@@ -550,6 +564,13 @@ static void recalculate_absolute_size(struct ui_descriptor *subject,
 			       subject->size.offset.y;
 }
 
+static void fix_image_position(Vector2 *pos, Vector2 size)
+{
+	// Fix position to account for origin
+	pos->x += size.x / 2;
+	pos->y += size.y / 2;
+}
+
 static Color fix_color(Color color, float transparency)
 {
 	return (Color){ color.r, color.g, color.b,
@@ -581,21 +602,9 @@ static void draw_bound_text(const struct ui_text *text, Vector2 pos,
 static void draw_image(const struct ui_image *img, Vector2 pos, Vector2 size,
 		       float transparency)
 {
-	const Texture2D tex = img->tex;
 	const Color tint = fix_color(img->tint, transparency);
-	const Rectangle src = {
-		.x = 0,
-		.y = 0,
-		.width = (float)tex.width,
-		.height = (float)tex.height,
-	};
-	const Rectangle dest = {
-		.x = pos.x,
-		.y = pos.y,
-		.width = size.x,
-		.height = size.y,
-	};
-	DrawTexturePro(tex, src, dest, (Vector2){ 0, 0 }, 0, tint);
+	fix_image_position(&pos, size);
+	texture_draw(&img->tex, pos, size, 0, tint);
 }
 
 static void ui_draw_frame(const struct ui_descriptor *data)
@@ -856,15 +865,19 @@ void ui_init(void)
 	veloc->data->label.text.color = stat_color;
 	ui_set_font(veloc, "res/fnt/chalkduster.ttf", 20);
 
-	struct ui_object *testimg = ui_create(UIC_IMAGE, "dumimg", root).object;
-	testimg->data->size.offset = (Vector2){ 100, 100 };
-	testimg->data->position.scale = (Vector2){ 0.5F, 0.5F };
-	testimg->data->anchor = (Vector2){ 0.5F, 0.5F };
-	ui_set_image(testimg, "res/img/level_num_btn.png");
+	struct ui_object *testimg =
+		ui_create_ext(UIC_IMAGE, "dumimg", root,
+			      (struct ui_descriptor){
+				      .size.offset = (Vector2){ 100, 100 },
+				      .position.scale = (Vector2){ 0.5F, 0.9F },
+				      .anchor = (Vector2){ 0.5F, 1 },
+			      })
+			.object;
+	ui_set_image(testimg, "res/img/ui/lvlnumbtn.png");
 
 	struct ui_object *button = ui_create(UIC_BUTTON, "btn", root).object;
 	button->data->size.offset = (Vector2){ 300, 80 };
-	button->data->position.offset = (Vector2){ 250, 500 };
+	button->data->position.offset = (Vector2){ 100, 500 };
 	ui_set_text(button, "click me!\n\nf(x) = 2 * x + 5");
 	ui_set_font(button, "res/fnt/chalkduster.ttf", 24);
 

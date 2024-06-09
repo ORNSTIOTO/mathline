@@ -1,6 +1,7 @@
 #include "engine/render.h"
 #include "graph.h"
 #include "player.h"
+#include "engine/tex.h"
 #include <rlgl.h>
 #include <raymath.h>
 #include <malloc.h>
@@ -39,5 +40,7 @@ void render(void)
 		render_fgraph(game.graphs[i], i % 2 == 0 ? RED : BLUE);
 
 	const struct player *player = game.player;
-	DrawCircleV(player->pos, player->radius, player->color);
+	const Vector2 size = { player->radius * 2, player->radius * 2 };
+	texture_draw(&player->tex, player->pos, size, player->rotation,
+		     player->tint);
 }
