@@ -1,0 +1,5 @@
+engine/obj/
+game/obj/
+bin/
+
+*.o
