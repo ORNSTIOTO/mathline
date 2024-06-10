@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <malloc.h>
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #define MAX(x, y) x > y ? x : y
