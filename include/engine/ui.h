@@ -24,6 +24,8 @@ enum ui_class {
 
 enum ui_font_type {
 	UIF_DEFAULT,
+	UIF_CRAYON,
+	UIF_DEBUG,
 	UIF_RESOURCE,
 };
 
@@ -58,6 +60,8 @@ struct ui_text {
 		float size;
 		float spacing_px;
 	} font;
+	_Bool autowrap;
+	_Bool overflow;
 	enum ui_txtalign_h align_horizontal;
 	enum ui_txtalign_v align_vertical;
 	size_t size; // bytes of text, NOT length
@@ -179,11 +183,13 @@ struct ui_res {
 void ui_set_parent(struct ui_object *obj, struct ui_object *parent);
 void ui_set_text(struct ui_object *obj, const char *s);
 void ui_set_ftext(struct ui_object *obj, const char *f, ...);
-void ui_set_font(struct ui_object *obj, const char *fntname, size_t fntsize);
-void ui_set_fontsize(struct ui_object *obj, size_t fntsize);
+void ui_set_font(struct ui_object *obj, const char *fntname, float fntsize);
+void ui_set_fontsize(struct ui_object *obj, float fntsize);
+void ui_set_fonttype(struct ui_object *obj, enum ui_font_type ft,
+		     float fntsize);
 void ui_set_image(struct ui_object *obj, const char *filename);
 
-void ui_set_default_font(const char *fntname);
+void ui_use_font(const char *fntname);
 
 struct ui_res ui_create_ext(enum ui_class class, const char *name,
 			    struct ui_object *parent,
