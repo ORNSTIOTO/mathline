@@ -43,6 +43,7 @@ void arraylist_destroy(struct arraylist *list);
 void arraylist_provide_mapping(struct arraylist *list,
 			       struct arraylist_map map);
 
+void arraylist_clear(struct arraylist *list);
 void arraylist_ensure(struct arraylist *list, size_t nmemb_new);
 size_t arraylist_pushback(struct arraylist *list, const void *entry);
 void arraylist_remove(struct arraylist *list, size_t idx);
@@ -50,6 +51,7 @@ void arraylist_overwrite(struct arraylist *list, size_t idx, const void *entry);
 void arraylist_trim(struct arraylist *list);
 
 void *arraylist_get(struct arraylist *list, size_t idx);
+size_t arraylist_count(struct arraylist *list);
 
 size_t arraylist_id_locate(struct arraylist *list, unsigned id);
 
