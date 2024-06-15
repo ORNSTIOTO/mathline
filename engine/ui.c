@@ -70,8 +70,11 @@ const struct uie_label label_default_attributes = {
 		.type = UIF_DEFAULT,
 		.data = NULL,
 		.size = 16,
-		.spacing_px = 2,
+		.spacing_px = 0,
+		.linespacing_px = 0,
 	},
+	.text.autowrap = 1,
+	.text.overflow = 0,
 	.text.size = 0,
 	.text.string = NULL,
 };
@@ -84,7 +87,10 @@ const struct uie_button button_default_attributes = {
 		.data = NULL,
 		.size = 16,
 		.spacing_px = 2,
+		.linespacing_px = 0,
 	},
+	.text.autowrap = 1,
+	.text.overflow = 0,
 	.text.size = 0,
 	.text.string = NULL,
 };
@@ -621,11 +627,100 @@ static void draw_text(const struct ui_text *text, Vector2 pos)
 		   text->font.spacing_px, color);
 }
 
-static void draw_bound_text(const struct ui_text *text, Vector2 pos,
+static void draw_bound_text(const struct ui_text *text, Vector2 position,
 			    Vector2 bounds)
 {
-	// TODO Text auto-wrap, since it must be within bounds
-	draw_text(text, pos);
+	const Font font = *text->font.data;
+	const float fsize = text->font.size;
+	const float scale_factor = fsize / (float)font.baseSize;
+	const float spacing = text->font.spacing_px;
+	const char *str = text->string;
+
+	const _Bool aw = text->autowrap;
+	const _Bool of = text->overflow;
+
+	// TODO: Create this arraylist just once and do not destroy it.
+	struct arraylist codepoints =
+		arraylist_create_preloaded(sizeof(int), 64, 0);
+
+	float word_width = 0;
+
+	float x = 0;
+	float y = 0;
+	for (;;) {
+		int codepoint_size;
+		const int codepoint = GetCodepoint(str++, &codepoint_size);
+		const GlyphInfo glyinfo = GetGlyphInfo(font, codepoint);
+
+		const _Bool is_ws = codepoint == ' ';
+		const _Bool is_nl = codepoint == '\n';
+		const _Bool is_nul = codepoint == 0;
+		const _Bool is_split = is_ws || is_nl || is_nul;
+
+		const float codepoint_width =
+			(float)glyinfo.advanceX * scale_factor;
+		const float codepoint_height =
+			fsize + text->font.linespacing_px;
+
+		if (is_split) {
+draw_word:;
+			const Vector2 pos = { position.x + x, position.y + y };
+			const int ccount = (int)arraylist_count(&codepoints);
+			DrawTextCodepoints(font, codepoints.data, ccount, pos,
+					   fsize, spacing, text->color);
+
+			arraylist_clear(&codepoints);
+
+			if (!is_split)
+				goto ret_newline;
+
+			//   NOTE: DrawTextCodepoints() does not draw
+			// whitespaces, since it is not a glyph. Therefore,
+			// we are just going to manipulate the word width.
+			word_width += codepoint_width;
+
+			if (is_nl) {
+				x = 0;
+				y += codepoint_height;
+				word_width = 0;
+				continue;
+			}
+
+			if (is_nul)
+				break;
+
+			x += word_width;
+			word_width = 0;
+
+			continue;
+		}
+
+		const float this_width = codepoint_width + spacing;
+
+		if (x + word_width + this_width > bounds.x) {
+			if (aw && x != 0) {
+				x = 0;
+				y += codepoint_height;
+			} else if (!of)
+				break;
+		}
+
+		if (aw && word_width + this_width > bounds.x) {
+			goto draw_word;
+ret_newline: // Return point from goto
+
+			word_width = 0;
+			x = 0;
+			y += codepoint_height;
+		}
+
+		word_width += this_width;
+
+		if (!is_ws && !is_nl && !is_nul)
+			arraylist_pushback(&codepoints, &codepoint);
+	}
+
+	arraylist_destroy(&codepoints);
 }
 
 static void draw_image(const struct ui_image *img, Vector2 pos, Vector2 size,
@@ -849,18 +944,6 @@ void ui_init(void)
 	brect->data->size.offset = (Vector2){ 140, 240 };
 	brect->data->color = BLUE;
 
-	struct ui_object *title = ui_create(UIC_LABEL, "title", root).object;
-	title->data->position.offset = (Vector2){ 0, 0 };
-	title->data->size = (UDim2){ { 0, 60 }, { 1, 0 } };
-	title->data->transparency = 1;
-	title->data->label.text.color = ORANGE;
-	ui_set_text(
-		title,
-		"Mathline [Still have to implement the line auto-wrapping]");
-	ui_set_fonttype(title, UIF_CRAYON, 46);
-
-	// TODO Debug font: https://int10h.org/oldschool-pc-fonts/fontlist/font?ibm_vga_9x16#-
-
 	const char *fontname = "res/fnt/dkcrayon-reg.otf";
 	const size_t fontsize = 20;
 
@@ -904,6 +987,18 @@ void ui_init(void)
 	//		      })
 	//		.object;
 	//ui_set_image(testimg, "res/img/ui/lvlnumbtn.png");
+
+	struct ui_object *title = ui_create(UIC_LABEL, "title", root).object;
+	title->data->position.offset = (Vector2){ 0, 0 };
+	title->data->size = (UDim2){ { 600, 260 }, { 0, 0 } };
+	title->data->transparency = 0.5F;
+	title->data->label.text.color = ORANGE;
+	title->data->label.text.autowrap = 1;
+	title->data->label.text.overflow = 1;
+	ui_set_text(
+		title,
+		"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\nWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
+	ui_set_fonttype(title, UIF_CRAYON, 24);
 
 	struct ui_object *button = ui_create(UIC_BUTTON, "btn", root).object;
 	button->data->size.offset = (Vector2){ 300, 80 };

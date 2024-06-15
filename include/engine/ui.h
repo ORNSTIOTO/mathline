@@ -29,18 +29,6 @@ enum ui_font_type {
 	UIF_RESOURCE,
 };
 
-enum ui_txtalign_h {
-	UI_TXTAH_LEFT,
-	UI_TXTAH_CENTER,
-	UI_TXTAH_RIGHT,
-};
-
-enum ui_txtalign_v {
-	UI_TXTAV_TOP,
-	UI_TXTAV_CENTER,
-	UI_TXTAV_BOTTOM,
-};
-
 enum ui_image_scalemode {
 	UI_IMGSM_STRETCH,
 	UI_IMGSM_KEEPASPECT,
@@ -59,11 +47,10 @@ struct ui_text {
 		Font *data;
 		float size;
 		float spacing_px;
+		float linespacing_px;
 	} font;
 	_Bool autowrap;
 	_Bool overflow;
-	enum ui_txtalign_h align_horizontal;
-	enum ui_txtalign_v align_vertical;
 	size_t size; // bytes of text, NOT length
 	char *string;
 };
@@ -83,6 +70,12 @@ struct ui_button {
 	} events;
 };
 
+struct ui_textbox {
+	struct {
+		struct event focused, focuslost;
+	} events;
+};
+
 struct uie_canvas {};
 
 struct uie_frame {};
@@ -91,12 +84,12 @@ struct uie_label {
 	struct ui_text text;
 };
 
-struct uie_textbox {
+struct uie_button {
 	struct ui_text text;
 	struct ui_button btn;
 };
 
-struct uie_button {
+struct uie_textbox {
 	struct ui_text text;
 	struct ui_button btn;
 };
@@ -140,6 +133,7 @@ struct ui_descriptor {
 		struct uie_frame frame;
 		struct uie_label label;
 		struct uie_button button;
+		struct uie_textbox textbox;
 		struct uie_image image;
 	};
 
