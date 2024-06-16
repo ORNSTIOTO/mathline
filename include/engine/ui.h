@@ -18,6 +18,7 @@ enum ui_class {
 	UIC_FRAME,
 	UIC_LABEL,
 	UIC_BUTTON,
+	UIC_TEXTBOX,
 	UIC_IMAGE,
 	UIC_IMAGEBUTTON,
 };
@@ -36,6 +37,10 @@ enum ui_image_scalemode {
 
 struct evtbtn_args {
 	struct ui_object *button;
+};
+
+struct evtbox_args {
+	struct ui_object *textbox;
 };
 
 struct ui_text {
@@ -91,7 +96,7 @@ struct uie_button {
 
 struct uie_textbox {
 	struct ui_text text;
-	struct ui_button btn;
+	struct ui_textbox box;
 };
 
 struct uie_image {

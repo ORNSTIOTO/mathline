@@ -29,6 +29,7 @@ struct {
 	size_t nmemb;
 	struct ui_object *buttons[256]; // TODO dynamic
 	struct ui_object *down_on; // used for the "Clicked" event
+	struct ui_object *focused; // textbox, used for "FocusLost" event
 } click_area;
 
 struct textures {
@@ -80,6 +81,22 @@ const struct uie_label label_default_attributes = {
 };
 
 const struct uie_button button_default_attributes = {
+	.text.color = BLACK,
+	.text.transparency = 0,
+	.text.font = {
+		.type = UIF_DEFAULT,
+		.data = NULL,
+		.size = 16,
+		.spacing_px = 2,
+		.linespacing_px = 0,
+	},
+	.text.autowrap = 1,
+	.text.overflow = 0,
+	.text.size = 0,
+	.text.string = NULL,
+};
+
+const struct uie_button textbox_default_attributes = {
 	.text.color = BLACK,
 	.text.transparency = 0,
 	.text.font = {
@@ -391,6 +408,11 @@ static void set_default_class_attributes(struct ui_descriptor *descriptor)
 		size = sizeof button_default_attributes;
 		dest = &descriptor->button;
 		break;
+	case UIC_TEXTBOX:
+		list = &textbox_default_attributes;
+		size = sizeof textbox_default_attributes;
+		dest = &descriptor->textbox;
+		break;
 	case UIC_IMAGE:
 		list = &image_default_attributes;
 		size = sizeof image_default_attributes;
@@ -432,6 +454,7 @@ static void initialize_object(struct ui_object *object, enum ui_class class)
 	switch (data->class) {
 	case UIC_BUTTON:
 	case UIC_IMAGEBUTTON:
+	case UIC_TEXTBOX:
 		setup_button_handlers(object);
 		break;
 	default:
@@ -449,31 +472,6 @@ static struct ui_res __int_ui_create(enum ui_class class, const char *name,
 		return UIRES_BAD_ID;
 
 	size_t data_size = sizeof(struct ui_descriptor);
-
-	//   TODO: Make a large structure to index this type of data by class
-	// id, instead of writing switch statements to hardcode them.
-
-	switch (class) {
-	case UIC_NONE:
-		return (struct ui_res){ 0, NULL };
-	case UIC_CANVAS:
-		data_size += sizeof(struct uie_canvas);
-		break;
-	case UIC_FRAME:
-		data_size += sizeof(struct uie_frame);
-		break;
-	case UIC_LABEL:
-		data_size += sizeof(struct uie_label);
-		break;
-	case UIC_BUTTON:
-		data_size += sizeof(struct uie_button);
-		break;
-	case UIC_IMAGE:
-		data_size += sizeof(struct uie_image);
-		break;
-	case UIC_IMAGEBUTTON:
-		return (struct ui_res){ -EINVAL, NULL };
-	}
 
 	struct ui_descriptor *descriptor = calloc(1, data_size);
 	struct ui_object *obj = add_entry(id, descriptor);
@@ -510,6 +508,9 @@ static void free_class_data(struct ui_descriptor *descriptor)
 		break;
 	case UIC_BUTTON:
 		free(descriptor->button.text.string);
+		break;
+	case UIC_TEXTBOX:
+		free(descriptor->textbox.text.string);
 		break;
 	default:
 		break;
@@ -754,6 +755,11 @@ static void ui_draw_image(const struct ui_descriptor *data)
 		   data->transparency);
 }
 
+static void ui_draw_textbox(const struct ui_descriptor *data)
+{
+	ui_draw_label(data);
+}
+
 static void ui_draw_single(const struct ui_descriptor *data)
 {
 	switch (data->class) {
@@ -768,6 +774,9 @@ static void ui_draw_single(const struct ui_descriptor *data)
 		break;
 	case UIC_IMAGE:
 		ui_draw_image(data);
+		break;
+	case UIC_TEXTBOX:
+		ui_draw_textbox(data);
 		break;
 	default:
 		break;
@@ -823,42 +832,107 @@ static struct ui_object *ui_find_hovered_button(void)
 	return NULL;
 }
 
+static void lose_focus(void)
+{
+	struct evtbox_args args = { .textbox = click_area.focused };
+	evt_fire(&click_area.focused->data->textbox.box.events.focuslost,
+		 &args);
+	click_area.focused = NULL;
+}
+
+static void gain_focus(struct ui_object *textbox)
+{
+	struct evtbox_args args = { .textbox = textbox };
+	evt_fire(&textbox->data->textbox.box.events.focused, &args);
+	click_area.focused = textbox;
+}
+
+static void button_lmbdown(struct ui_object *button, struct ui_button *btn)
+{
+	struct evtbtn_args args = {};
+
+	click_area.down_on = args.button = button;
+	evt_fire(&btn->events.lmb_down, &args);
+}
+
+static void textbox_lmbdown(struct ui_object *textbox)
+{
+	gain_focus(textbox);
+}
+
+static void handle_lmbdown(struct ui_object *on)
+{
+	if (click_area.focused != NULL)
+		lose_focus();
+
+	if (on == NULL)
+		return;
+
+	switch (on->data->class) {
+	case UIC_BUTTON:
+	case UIC_IMAGEBUTTON:
+		button_lmbdown(on, &on->data->button.btn);
+		break;
+	case UIC_TEXTBOX:
+		textbox_lmbdown(on);
+		break;
+	default:
+		break;
+	}
+}
+
+static void button_lmbup(struct ui_object *button, struct ui_button *btn)
+{
+	struct evtbtn_args args = {};
+	const _Bool hovers = button == click_area.down_on;
+
+	args.button = click_area.down_on;
+
+	if (button != NULL)
+		evt_fire(&button->data->button.btn.events.lmb_up, &args);
+	if (button == click_area.down_on && btn != NULL)
+		evt_fire(&btn->events.clicked, &args);
+}
+
+static void handle_lmbup(struct ui_object *on)
+{
+	if (on == NULL) {
+		button_lmbup(NULL, NULL);
+		return;
+	}
+
+	switch (on->data->class) {
+	case UIC_BUTTON:
+	case UIC_IMAGEBUTTON:
+		button_lmbup(on, &on->data->button.btn);
+		break;
+	default:
+		break;
+	}
+}
+
 void ui_resolve_mouse(void)
 {
-	const _Bool lmb_up = IsMouseButtonUp(MOUSE_LEFT_BUTTON);
-	const _Bool lmb_down = IsMouseButtonDown(MOUSE_LEFT_BUTTON);
-
-	struct evtbtn_args args = {};
+	const _Bool lmb_down = IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
+	const _Bool lmb_up = IsMouseButtonReleased(MOUSE_LEFT_BUTTON);
 
 	if (click_area.down_on == NULL && !lmb_down)
 		click_area.down_on = NULL;
 
 	struct ui_object *down_on = click_area.down_on;
 
-	if (down_on == NULL && lmb_down) {
+	if (lmb_down) {
 		struct ui_object *button = ui_find_hovered_button();
-		if (button == NULL)
-			return;
-
-		click_area.down_on = args.button = button;
-		evt_fire(&button->data->button.btn.events.lmb_down, &args);
+		handle_lmbdown(button);
 
 		return;
 	}
 
-	if (down_on != NULL && !lmb_down) {
+	if (lmb_up) {
 		struct ui_object *button = ui_find_hovered_button();
-		const _Bool hovers = button == down_on;
-
-		args.button = down_on;
-
-		evt_fire(&down_on->data->button.btn.events.lmb_up, &args);
-		if (button == down_on)
-			evt_fire(&button->data->button.btn.events.clicked,
-				 &args);
+		handle_lmbup(button);
 
 		click_area.down_on = NULL;
-
 		return;
 	}
 }
@@ -917,6 +991,16 @@ static void testbtn_event_function_d(void *args)
 static void testbtn_event_function_u(void *args)
 {
 	printf("Up!\n");
+}
+
+static void testbox_event_function_fd(void *args)
+{
+	printf("Focused!\n");
+}
+
+static void testbox_event_function_fl(void *args)
+{
+	printf("Focus lost!\n");
 }
 
 void ui_init(void)
@@ -1013,6 +1097,17 @@ void ui_init(void)
 	evt_connect(e_c, testbtn_event_function_c);
 	evt_connect(e_d, testbtn_event_function_d);
 	evt_connect(e_u, testbtn_event_function_u);
+
+	struct ui_object *textbox = ui_create(UIC_TEXTBOX, "box", root).object;
+	textbox->data->position.offset = (Vector2){ 500, 500 };
+	ui_set_text(textbox, "");
+	ui_set_fonttype(textbox, UIF_DEBUG, stat_font_size + 5);
+
+	struct event *e_fd = &textbox->data->textbox.box.events.focused;
+	struct event *e_fl = &textbox->data->textbox.box.events.focuslost;
+
+	evt_connect(e_fd, testbox_event_function_fd);
+	evt_connect(e_fl, testbox_event_function_fl);
 }
 
 void update_stat_counters(void)
