@@ -40,6 +40,8 @@ void game_init(struct window *window)
 
 static void handle_input(void)
 {
+	ui_resolve_keyboard();
+
 	const Vector2 mouse_delta = GetMouseDelta();
 	const float mdx = mouse_delta.x;
 	const float mdy = mouse_delta.y;

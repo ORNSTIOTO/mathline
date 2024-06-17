@@ -35,6 +35,11 @@ enum ui_image_scalemode {
 	UI_IMGSM_KEEPASPECT,
 };
 
+enum ui_box_focusmode {
+	UI_BOXFM_CLICK,
+	UI_BOXFM_AREA,
+};
+
 struct evtbtn_args {
 	struct ui_object *button;
 };
@@ -57,6 +62,7 @@ struct ui_text {
 	_Bool autowrap;
 	_Bool overflow;
 	size_t size; // bytes of text, NOT length
+	size_t capacity; // allocated bytes
 	char *string;
 };
 
@@ -79,6 +85,12 @@ struct ui_textbox {
 	struct {
 		struct event focused, focuslost;
 	} events;
+
+	enum ui_box_focusmode focusmode;
+	Vector2 area_focus;
+	_Bool focused;
+
+	int cursor;
 };
 
 struct uie_canvas {};
@@ -145,6 +157,12 @@ struct ui_descriptor {
 	////////////
 	// ENGINE EXCLUSIVE! Do not read or modify.
 	struct {
+		//   In the next engine, leverage metadata instead of relying
+		// on class names. This will allow creating multiple class
+		// objects controlled via their metadata, and thus the engine
+		// would be able to handle a lot of them without many
+		// changes in the code, since each class would just have
+		// a different meta preset that defines it.
 		_Bool valid;
 		_Bool has_text;
 		_Bool has_image;
@@ -200,6 +218,7 @@ int ui_delete(const char *name);
 struct ui_object *ui_get(const char *by_name);
 
 void ui_resolve_mouse(void);
+void ui_resolve_keyboard(void);
 
 void update_stat_counters(void);
 void redraw_ui(void);

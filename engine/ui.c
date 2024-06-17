@@ -11,6 +11,7 @@
 #include <malloc.h>
 
 #define CHILD_COUNT_INCREMENT 32
+#define TEXT_DEFAULT_CAPACITY 128
 
 #define FONTNAME_DEBUG "res/fnt/debug_ibmvga9x16.ttf"
 #define FONTNAME_CRAYON "res/fnt/dkcrayon-reg.otf"
@@ -96,7 +97,7 @@ const struct uie_button button_default_attributes = {
 	.text.string = NULL,
 };
 
-const struct uie_button textbox_default_attributes = {
+const struct uie_textbox textbox_default_attributes = {
 	.text.color = BLACK,
 	.text.transparency = 0,
 	.text.font = {
@@ -110,6 +111,9 @@ const struct uie_button textbox_default_attributes = {
 	.text.overflow = 0,
 	.text.size = 0,
 	.text.string = NULL,
+
+	.box.focusmode = UI_BOXFM_CLICK,
+	.box.cursor = 0,
 };
 
 const struct uie_image image_default_attributes = {
@@ -261,6 +265,14 @@ void ui_set_parent(struct ui_object *obj, struct ui_object *parent)
 
 	// TODO Update this to remove children, too.
 	register_child(parent, obj);
+}
+
+static void ui_init_text(struct ui_object *obj)
+{
+	struct ui_text *text = &obj->data->label.text;
+	text->string = calloc(TEXT_DEFAULT_CAPACITY, 1);
+	text->size = 0;
+	text->capacity = TEXT_DEFAULT_CAPACITY;
 }
 
 void ui_set_text(struct ui_object *obj, const char *s)
@@ -746,7 +758,9 @@ static void ui_draw_label(const struct ui_descriptor *data)
 
 static void ui_draw_button(const struct ui_descriptor *data)
 {
-	ui_draw_label(data);
+	draw_rect(data);
+	draw_bound_text(&data->button.text, data->_abs_position,
+			data->_abs_size);
 }
 
 static void ui_draw_image(const struct ui_descriptor *data)
@@ -757,7 +771,12 @@ static void ui_draw_image(const struct ui_descriptor *data)
 
 static void ui_draw_textbox(const struct ui_descriptor *data)
 {
-	ui_draw_label(data);
+	draw_rect(data);
+	draw_bound_text(&data->textbox.text, data->_abs_position,
+			data->_abs_size);
+
+	//if (data->textbox.box.focused)
+	// 	draw_cursor(data->_abs_position, );
 }
 
 static void ui_draw_single(const struct ui_descriptor *data)
@@ -838,6 +857,7 @@ static void lose_focus(void)
 	evt_fire(&click_area.focused->data->textbox.box.events.focuslost,
 		 &args);
 	click_area.focused = NULL;
+	click_area.focused->data->textbox.box.focused = 0;
 }
 
 static void gain_focus(struct ui_object *textbox)
@@ -845,6 +865,7 @@ static void gain_focus(struct ui_object *textbox)
 	struct evtbox_args args = { .textbox = textbox };
 	evt_fire(&textbox->data->textbox.box.events.focused, &args);
 	click_area.focused = textbox;
+	textbox->data->textbox.box.focused = 1;
 }
 
 static void button_lmbdown(struct ui_object *button, struct ui_button *btn)
@@ -935,6 +956,85 @@ void ui_resolve_mouse(void)
 		click_area.down_on = NULL;
 		return;
 	}
+}
+
+static void text_resize_to(struct ui_text *text, size_t to)
+{
+	void *tmp = realloc(text->string, to);
+	if (tmp == NULL)
+		return;
+
+	text->string = tmp;
+	text->string[text->size] = 0;
+	text->capacity = to;
+}
+
+static void text_resize(struct ui_text *text)
+{
+	if (text->capacity <= TEXT_DEFAULT_CAPACITY / 2)
+		text_resize_to(text, TEXT_DEFAULT_CAPACITY);
+	else
+		text_resize_to(text, text->capacity * 2);
+}
+
+static void text_write(struct ui_text *text, char c, size_t at)
+{
+	if (text->size + sizeof c + 1 >= text->capacity)
+		text_resize(text);
+
+	char *s = text->string;
+
+	if (at == text->size) {
+		s[at] = c;
+		s[at + 1] = 0;
+		text->size++;
+		return;
+	}
+}
+
+static void text_erase(struct ui_text *text, size_t at)
+{
+	if (at > text->size)
+		return;
+
+	char *s = text->string;
+	s[at] = 0;
+	text->size--;
+}
+
+static void textbox_write(struct ui_object *textbox, char c)
+{
+	struct uie_textbox *tbox = &textbox->data->textbox;
+	struct ui_text *text = &tbox->text;
+	text_write(text, c, tbox->box.cursor++);
+}
+
+static void textbox_backspace(struct ui_object *textbox)
+{
+	struct uie_textbox *tbox = &textbox->data->textbox;
+	struct ui_text *text = &tbox->text;
+	if (tbox->box.cursor > 0)
+		text_erase(text, --tbox->box.cursor);
+}
+
+static void process_textbox_input(struct ui_object *textbox)
+{
+	const int c = GetCharPressed();
+
+	if (c > 0)
+		textbox_write(textbox, (char)c);
+
+	if (IsKeyPressed(KEY_BACKSPACE))
+		textbox_backspace(textbox);
+}
+
+void ui_resolve_keyboard(void)
+{
+	struct ui_object *focused = click_area.focused;
+	if (focused == NULL)
+		return;
+
+	process_textbox_input(focused);
 }
 
 static void ui_create_root(void)
@@ -1100,8 +1200,10 @@ void ui_init(void)
 
 	struct ui_object *textbox = ui_create(UIC_TEXTBOX, "box", root).object;
 	textbox->data->position.offset = (Vector2){ 500, 500 };
-	ui_set_text(textbox, "");
-	ui_set_fonttype(textbox, UIF_DEBUG, stat_font_size + 5);
+	textbox->data->textbox.text.autowrap = 1;
+	textbox->data->textbox.text.overflow = 1;
+	ui_init_text(textbox);
+	ui_set_fonttype(textbox, UIF_DEBUG, stat_font_size);
 
 	struct event *e_fd = &textbox->data->textbox.box.events.focused;
 	struct event *e_fl = &textbox->data->textbox.box.events.focuslost;
