@@ -36,8 +36,25 @@ void game_init(struct window *window)
 	ui_init();
 }
 
+static void keyboard_debug(void)
+{
+	const int c = GetCharPressed();
+
+	switch (c) {
+	case 'p':
+		if (physics_is_paused())
+			physics_resume();
+		else
+			physics_pause();
+		break;
+	default:
+		break;
+	}
+}
+
 static void handle_input(void)
 {
+	keyboard_debug();
 	ui_resolve_keyboard();
 
 	const Vector2 mouse_delta = GetMouseDelta();

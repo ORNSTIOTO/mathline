@@ -43,4 +43,5 @@ void render(void)
 	const Vector2 size = { player->radius * 2, player->radius * 2 };
 	texture_draw(&player->tex, player->pos, size, player->rotation,
 		     player->tint);
+	DrawLineV(player->pos, (Vector2){player->pos.x+player->body.debug.x,player->pos.y+player->body.debug.y}, RED);
 }
