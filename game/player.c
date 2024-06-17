@@ -55,7 +55,12 @@ void player_init(void)
 
 	player.pos = (Vector2){ 0, -256 };
 	player.radius = 20.0F;
+	player.tex_size = 24.0F;
 	player.tint = (Color){ 255, 255, 255, 255 };
 
 	texture_load(&player.tex, "res/img/ball/puffer.png");
+
+	player.body.mass = 1;
+	player.body.moment_of_inertia = calculate_circle_inertia(player.radius);
+	
 }
