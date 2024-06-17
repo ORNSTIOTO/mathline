@@ -863,8 +863,8 @@ static void lose_focus(void)
 	struct evtbox_args args = { .textbox = click_area.focused };
 	evt_fire(&click_area.focused->data->textbox.box.events.focuslost,
 		 &args);
-	click_area.focused = NULL;
 	click_area.focused->data->textbox.box.focused = 0;
+	click_area.focused = NULL;
 }
 
 static void gain_focus(struct ui_object *textbox)
