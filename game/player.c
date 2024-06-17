@@ -12,10 +12,11 @@ extern struct game game;
 
 static struct player player = { 0 };
 
-static _Bool player_contained(Vector2 p)
+static _Bool player_contained(Vector2 p, float *distance)
 {
 	//printf("p { %f, %f }\n", p.x, p.y);
 	const Vector2 v = { player.pos.x - p.x, player.pos.y - p.y };
+	*distance = Vector2Length(v);
 	return Vector2Length(v) <= player.radius;
 }
 
@@ -25,17 +26,29 @@ static _Bool player_collides_with_graph(graph_t graph, Vector2 *point)
 
 	const int precision = 10;
 	const float px = player.pos.x;
+	
+	float old_dist = INFINITY;
+	float dist;
+
 	for (int x = (int)(px - player.radius) * precision;
 	     x <= (int)(px + player.radius) * precision; ++x) {
 		const float y =
 			-graph((float)x / (float)precision / GRAPH_SCALE);
 		const Vector2 p = { (float)x / (float)precision,
 				    y * GRAPH_SCALE };
-		if (player_contained(p)) {
-			point->x = p.x;
-			point->y = p.y;
-			return 1;
+		
+		if (player_contained(p, &dist)) {
+			if (dist < old_dist) {
+				old_dist = dist;
+				point->x = p.x;
+				point->y = p.y;
+			}
+			
+			//return 1;
 		}
+	}
+	if (old_dist != INFINITY) {
+		return 1;
 	}
 	return 0;
 }

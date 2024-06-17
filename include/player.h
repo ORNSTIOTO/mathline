@@ -13,10 +13,10 @@ struct player {
 
 	struct {
 		float mass;
-		Vector2 linear_velocity, linear_accel, force;
+		Vector2 linear_velocity, linear_accel, force, friction;
 		float angular_velocity;
 		float torque, moment_of_inertia;
-		Vector2 collision, coll_nor, bvel, debug;
+		Vector2 collision, coll_nor, debug;
 	} body;
 };
 
