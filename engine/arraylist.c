@@ -139,7 +139,7 @@ struct arraylist arraylist_create_full(size_t datasize, size_t nmemb,
 	list.nmemb = 0; // the amount of actual members
 	list.maxmemb = nmemb; // the amount of members allocated for
 	list.dsize = datasize;
-	list.esize = align ? list.dsize : calc_alignment(list.dsize);
+	list.esize = align ? calc_alignment(list.dsize) : list.dsize;
 	list.size = list.esize * list.maxmemb;
 	list.data = calloc(list.maxmemb, list.esize);
 	list.zero = calloc(1, list.esize);
@@ -159,6 +159,12 @@ struct arraylist arraylist_create_preloaded(size_t datasize, size_t nmemb,
 struct arraylist arraylist_create(size_t datasize, _Bool align)
 {
 	return arraylist_create_preloaded(datasize, MINIMUM_LIST_SIZE, align);
+}
+
+void arraylist_clear(struct arraylist *list)
+{
+	list->idx = 0;
+	list->nmemb = 0;
 }
 
 void arraylist_ensure(struct arraylist *list, size_t nmemb_new)
@@ -215,6 +221,11 @@ void arraylist_trim(struct arraylist *list)
 void *arraylist_get(struct arraylist *list, size_t idx)
 {
 	return list->data + idx * list->esize;
+}
+
+size_t arraylist_count(struct arraylist *list)
+{
+	return list->nmemb;
 }
 
 void arraylist_provide_mapping(struct arraylist *list, struct arraylist_map map)

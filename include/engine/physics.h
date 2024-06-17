@@ -9,6 +9,9 @@
 void physics_update(float fdt);
 void physics_init(void);
 
+void physics_pause(void);
+void physics_resume(void);
+_Bool physics_is_paused(void);
 
 static float calculate_circle_inertia(float r)
 {

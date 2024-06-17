@@ -18,25 +18,16 @@ enum ui_class {
 	UIC_FRAME,
 	UIC_LABEL,
 	UIC_BUTTON,
+	UIC_TEXTBOX,
 	UIC_IMAGE,
 	UIC_IMAGEBUTTON,
 };
 
 enum ui_font_type {
 	UIF_DEFAULT,
+	UIF_CRAYON,
+	UIF_DEBUG,
 	UIF_RESOURCE,
-};
-
-enum ui_txtalign_h {
-	UI_TXTAH_LEFT,
-	UI_TXTAH_CENTER,
-	UI_TXTAH_RIGHT,
-};
-
-enum ui_txtalign_v {
-	UI_TXTAV_TOP,
-	UI_TXTAV_CENTER,
-	UI_TXTAV_BOTTOM,
 };
 
 enum ui_image_scalemode {
@@ -44,8 +35,17 @@ enum ui_image_scalemode {
 	UI_IMGSM_KEEPASPECT,
 };
 
+enum ui_box_focusmode {
+	UI_BOXFM_CLICK,
+	UI_BOXFM_AREA,
+};
+
 struct evtbtn_args {
 	struct ui_object *button;
+};
+
+struct evtbox_args {
+	struct ui_object *textbox;
 };
 
 struct ui_text {
@@ -57,10 +57,12 @@ struct ui_text {
 		Font *data;
 		float size;
 		float spacing_px;
+		float linespacing_px;
 	} font;
-	enum ui_txtalign_h align_horizontal;
-	enum ui_txtalign_v align_vertical;
+	_Bool autowrap;
+	_Bool overflow;
 	size_t size; // bytes of text, NOT length
+	size_t capacity; // allocated bytes
 	char *string;
 };
 
@@ -79,6 +81,18 @@ struct ui_button {
 	} events;
 };
 
+struct ui_textbox {
+	struct {
+		struct event focused, focuslost;
+	} events;
+
+	enum ui_box_focusmode focusmode;
+	Vector2 area_focus;
+	_Bool focused;
+
+	int cursor;
+};
+
 struct uie_canvas {};
 
 struct uie_frame {};
@@ -87,14 +101,14 @@ struct uie_label {
 	struct ui_text text;
 };
 
-struct uie_textbox {
+struct uie_button {
 	struct ui_text text;
 	struct ui_button btn;
 };
 
-struct uie_button {
+struct uie_textbox {
 	struct ui_text text;
-	struct ui_button btn;
+	struct ui_textbox box;
 };
 
 struct uie_image {
@@ -136,12 +150,19 @@ struct ui_descriptor {
 		struct uie_frame frame;
 		struct uie_label label;
 		struct uie_button button;
+		struct uie_textbox textbox;
 		struct uie_image image;
 	};
 
 	////////////
 	// ENGINE EXCLUSIVE! Do not read or modify.
 	struct {
+		//   In the next engine, leverage metadata instead of relying
+		// on class names. This will allow creating multiple class
+		// objects controlled via their metadata, and thus the engine
+		// would be able to handle a lot of them without many
+		// changes in the code, since each class would just have
+		// a different meta preset that defines it.
 		_Bool valid;
 		_Bool has_text;
 		_Bool has_image;
@@ -179,11 +200,13 @@ struct ui_res {
 void ui_set_parent(struct ui_object *obj, struct ui_object *parent);
 void ui_set_text(struct ui_object *obj, const char *s);
 void ui_set_ftext(struct ui_object *obj, const char *f, ...);
-void ui_set_font(struct ui_object *obj, const char *fntname, size_t fntsize);
-void ui_set_fontsize(struct ui_object *obj, size_t fntsize);
+void ui_set_font(struct ui_object *obj, const char *fntname, float fntsize);
+void ui_set_fontsize(struct ui_object *obj, float fntsize);
+void ui_set_fonttype(struct ui_object *obj, enum ui_font_type ft,
+		     float fntsize);
 void ui_set_image(struct ui_object *obj, const char *filename);
 
-void ui_set_default_font(const char *fntname);
+void ui_use_font(const char *fntname);
 
 struct ui_res ui_create_ext(enum ui_class class, const char *name,
 			    struct ui_object *parent,
@@ -195,6 +218,7 @@ int ui_delete(const char *name);
 struct ui_object *ui_get(const char *by_name);
 
 void ui_resolve_mouse(void);
+void ui_resolve_keyboard(void);
 
 void update_stat_counters(void);
 void redraw_ui(void);

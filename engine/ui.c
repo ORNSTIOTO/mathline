@@ -11,6 +11,10 @@
 #include <malloc.h>
 
 #define CHILD_COUNT_INCREMENT 32
+#define TEXT_DEFAULT_CAPACITY 128
+
+#define FONTNAME_DEBUG "res/fnt/debug_ibmvga9x16.ttf"
+#define FONTNAME_CRAYON "res/fnt/dkcrayon-reg.otf"
 
 extern struct game game;
 
@@ -26,6 +30,7 @@ struct {
 	size_t nmemb;
 	struct ui_object *buttons[256]; // TODO dynamic
 	struct ui_object *down_on; // used for the "Clicked" event
+	struct ui_object *focused; // textbox, used for "FocusLost" event
 } click_area;
 
 struct textures {
@@ -34,7 +39,7 @@ struct textures {
 } textures;
 
 const struct ui_descriptor desc_default_attributes = {
-.class = UIC_NONE,
+	.class = UIC_NONE,
 	.anchor = (Vector2){ 0, 0 },
 	.position = (UDim2){ { 0, 0 }, { 0, 0 } },
 	.size = (UDim2){ { 200, 100 }, { 0, 0 } },
@@ -67,8 +72,11 @@ const struct uie_label label_default_attributes = {
 		.type = UIF_DEFAULT,
 		.data = NULL,
 		.size = 16,
-		.spacing_px = 2,
+		.spacing_px = 0,
+		.linespacing_px = 0,
 	},
+	.text.autowrap = 1,
+	.text.overflow = 0,
 	.text.size = 0,
 	.text.string = NULL,
 };
@@ -81,9 +89,31 @@ const struct uie_button button_default_attributes = {
 		.data = NULL,
 		.size = 16,
 		.spacing_px = 2,
+		.linespacing_px = 0,
 	},
+	.text.autowrap = 1,
+	.text.overflow = 0,
 	.text.size = 0,
 	.text.string = NULL,
+};
+
+const struct uie_textbox textbox_default_attributes = {
+	.text.color = BLACK,
+	.text.transparency = 0,
+	.text.font = {
+		.type = UIF_DEFAULT,
+		.data = NULL,
+		.size = 16,
+		.spacing_px = 2,
+		.linespacing_px = 0,
+	},
+	.text.autowrap = 1,
+	.text.overflow = 0,
+	.text.size = 0,
+	.text.string = NULL,
+
+	.box.focusmode = UI_BOXFM_CLICK,
+	.box.cursor = 0,
 };
 
 const struct uie_image image_default_attributes = {
@@ -177,34 +207,34 @@ static unsigned calculate_font_id(const char *fntname, size_t fntsize)
 	return id;
 }
 
-static Font ui_rawfont_create(const char *fntname, size_t fnt_size)
+static Font ui_rawfont_create(const char *fntname, int fnt_size)
 {
-	const Font font = LoadFontEx(fntname, (int)fnt_size, 0, 256);
+	const Font font = LoadFontEx(fntname, fnt_size, 0, 256);
 	return font;
 }
 
-static struct ui_font ui_font_create(const char *fntname, size_t fntsize)
+static struct ui_font ui_font_create(const char *fntname, float fntsize)
 {
-	const Font font = ui_rawfont_create(fntname, fntsize);
+	const Font font = ui_rawfont_create(fntname, (int)fntsize);
 	Font *fontp = malloc(sizeof font);
 	memcpy(fontp, &font, sizeof font);
 
 	const struct ui_font fontdata = {
-		.id = calculate_font_id(fntname, fntsize),
+		.id = calculate_font_id(fntname, (size_t)fntsize),
 		.type = UIF_RESOURCE,
 		.data = fontp,
-		.size = (float)fntsize,
+		.size = fntsize,
 		.spacing_px = 2,
 	};
 	return fontdata;
 }
 
-static struct ui_font *ui_font_obtain(const char *fntname, size_t fntsize,
+static struct ui_font *ui_font_obtain(const char *fntname, float fntsize,
 				      _Bool *created)
 {
 	struct arraylist *fntlist = &textures.fonts;
 
-	const unsigned id = calculate_font_id(fntname, fntsize);
+	const unsigned id = calculate_font_id(fntname, (size_t)fntsize);
 	const size_t idx = arraylist_id_locate(fntlist, id);
 	if (idx == -1U) {
 		const struct ui_font font = ui_font_create(fntname, fntsize);
@@ -235,6 +265,14 @@ void ui_set_parent(struct ui_object *obj, struct ui_object *parent)
 
 	// TODO Update this to remove children, too.
 	register_child(parent, obj);
+}
+
+static void ui_init_text(struct ui_object *obj)
+{
+	struct ui_text *text = &obj->data->label.text;
+	text->string = calloc(TEXT_DEFAULT_CAPACITY, 1);
+	text->size = 0;
+	text->capacity = TEXT_DEFAULT_CAPACITY;
 }
 
 void ui_set_text(struct ui_object *obj, const char *s)
@@ -292,26 +330,54 @@ void ui_set_ftext(struct ui_object *obj, const char *f, ...)
 	va_end(args);
 }
 
-void ui_set_font(struct ui_object *obj, const char *fntname, size_t fntsize)
+static void unload_font(struct ui_font *font)
+{
+	if (font->type != UIF_RESOURCE)
+		return;
+
+	struct arraylist *fonts = &textures.fonts;
+	const size_t loc = arraylist_id_locate(fonts, font->id);
+	if (font->data != NULL && loc != -1U) {
+		UnloadFont(*font->data);
+		free(font->data);
+		arraylist_remove(fonts, loc);
+	}
+}
+
+void ui_set_font(struct ui_object *obj, const char *fntname, float fntsize)
 {
 	if (obj == NULL || fntname == NULL)
 		return;
 
 	_Bool created;
-	struct ui_font *font = ui_font_obtain(fntname, fntsize, &created);
-	font->size = (float)fntsize;
+	struct ui_font *newfont = ui_font_obtain(fntname, fntsize, &created);
+	newfont->size = (float)fntsize;
 
-	if (created) {
-		struct arraylist *fonts = &textures.fonts;
-		struct ui_font old = obj->data->label.text.font;
-		const size_t location = arraylist_id_locate(fonts, old.id);
-		if (location != -1U) {
-			UnloadFont(*old.data);
-			arraylist_remove(fonts, location);
-		}
-	}
+	struct ui_font *font = &obj->data->label.text.font;
 
-	memcpy(&obj->data->label.text.font, font, sizeof *font);
+	if (created)
+		unload_font(font);
+
+	memcpy(font, newfont, sizeof *newfont);
+	font->type = UIF_RESOURCE;
+}
+
+void ui_set_fontsize(struct ui_object *obj, float fntsize)
+{
+	// TODO not finished
+	struct ui_font *font = &obj->data->label.text.font;
+	font->size = fntsize;
+}
+
+void ui_set_fonttype(struct ui_object *obj, enum ui_font_type ft, float fntsize)
+{
+	if (ft == UIF_RESOURCE || ft == UIF_DEFAULT)
+		return;
+
+	const char *fntname = ft == UIF_CRAYON ? FONTNAME_CRAYON :
+			      ft == UIF_DEBUG  ? FONTNAME_DEBUG :
+						 NULL;
+	ui_set_font(obj, fntname, fntsize);
 }
 
 void ui_set_image(struct ui_object *obj, const char *filename)
@@ -354,6 +420,11 @@ static void set_default_class_attributes(struct ui_descriptor *descriptor)
 		size = sizeof button_default_attributes;
 		dest = &descriptor->button;
 		break;
+	case UIC_TEXTBOX:
+		list = &textbox_default_attributes;
+		size = sizeof textbox_default_attributes;
+		dest = &descriptor->textbox;
+		break;
 	case UIC_IMAGE:
 		list = &image_default_attributes;
 		size = sizeof image_default_attributes;
@@ -395,6 +466,7 @@ static void initialize_object(struct ui_object *object, enum ui_class class)
 	switch (data->class) {
 	case UIC_BUTTON:
 	case UIC_IMAGEBUTTON:
+	case UIC_TEXTBOX:
 		setup_button_handlers(object);
 		break;
 	default:
@@ -412,31 +484,6 @@ static struct ui_res __int_ui_create(enum ui_class class, const char *name,
 		return UIRES_BAD_ID;
 
 	size_t data_size = sizeof(struct ui_descriptor);
-
-	//   TODO: Make a large structure to index this type of data by class
-	// id, instead of writing switch statements to hardcode them.
-
-	switch (class) {
-	case UIC_NONE:
-		return (struct ui_res){ 0, NULL };
-	case UIC_CANVAS:
-		data_size += sizeof(struct uie_canvas);
-		break;
-	case UIC_FRAME:
-		data_size += sizeof(struct uie_frame);
-		break;
-	case UIC_LABEL:
-		data_size += sizeof(struct uie_label);
-		break;
-	case UIC_BUTTON:
-		data_size += sizeof(struct uie_button);
-		break;
-	case UIC_IMAGE:
-		data_size += sizeof(struct uie_image);
-		break;
-	case UIC_IMAGEBUTTON:
-		return (struct ui_res){ -EINVAL, NULL };
-	}
 
 	struct ui_descriptor *descriptor = calloc(1, data_size);
 	struct ui_object *obj = add_entry(id, descriptor);
@@ -473,6 +520,9 @@ static void free_class_data(struct ui_descriptor *descriptor)
 		break;
 	case UIC_BUTTON:
 		free(descriptor->button.text.string);
+		break;
+	case UIC_TEXTBOX:
+		free(descriptor->textbox.text.string);
 		break;
 	default:
 		break;
@@ -538,8 +588,6 @@ struct ui_object *ui_get(const char *by_name)
 // that they can use on the objects instead. This is more preferable, as it
 // avoids unnecessary calculations and does not reduce consistency as much.
 
-//   TODO Add support for anchors.
-
 static void recalculate_absolute_position(struct ui_descriptor *subject,
 					  const struct ui_descriptor *parent)
 {
@@ -592,11 +640,100 @@ static void draw_text(const struct ui_text *text, Vector2 pos)
 		   text->font.spacing_px, color);
 }
 
-static void draw_bound_text(const struct ui_text *text, Vector2 pos,
+static void draw_bound_text(const struct ui_text *text, Vector2 position,
 			    Vector2 bounds)
 {
-	// TODO Text auto-wrap, since it must be within bounds
-	draw_text(text, pos);
+	const Font font = *text->font.data;
+	const float fsize = text->font.size;
+	const float scale_factor = fsize / (float)font.baseSize;
+	const float spacing = text->font.spacing_px;
+	const char *str = text->string;
+
+	const _Bool aw = text->autowrap;
+	const _Bool of = text->overflow;
+
+	// TODO: Create this arraylist just once and do not destroy it.
+	struct arraylist codepoints =
+		arraylist_create_preloaded(sizeof(int), 64, 0);
+
+	float word_width = 0;
+
+	float x = 0;
+	float y = 0;
+	for (;;) {
+		int codepoint_size;
+		const int codepoint = GetCodepoint(str++, &codepoint_size);
+		const GlyphInfo glyinfo = GetGlyphInfo(font, codepoint);
+
+		const _Bool is_ws = codepoint == ' ';
+		const _Bool is_nl = codepoint == '\n';
+		const _Bool is_nul = codepoint == 0;
+		const _Bool is_split = is_ws || is_nl || is_nul;
+
+		const float codepoint_width =
+			(float)glyinfo.advanceX * scale_factor;
+		const float codepoint_height =
+			fsize + text->font.linespacing_px;
+
+		if (is_split) {
+draw_word:;
+			const Vector2 pos = { position.x + x, position.y + y };
+			const int ccount = (int)arraylist_count(&codepoints);
+			DrawTextCodepoints(font, codepoints.data, ccount, pos,
+					   fsize, spacing, text->color);
+
+			arraylist_clear(&codepoints);
+
+			if (!is_split)
+				goto ret_newline;
+
+			//   NOTE: DrawTextCodepoints() does not draw
+			// whitespaces, since it is not a glyph. Therefore,
+			// we are just going to manipulate the word width.
+			word_width += codepoint_width;
+
+			if (is_nl) {
+				x = 0;
+				y += codepoint_height;
+				word_width = 0;
+				continue;
+			}
+
+			if (is_nul)
+				break;
+
+			x += word_width;
+			word_width = 0;
+
+			continue;
+		}
+
+		const float this_width = codepoint_width + spacing;
+
+		if (x + word_width + this_width > bounds.x) {
+			if (aw && x != 0) {
+				x = 0;
+				y += codepoint_height;
+			} else if (!of)
+				break;
+		}
+
+		if (aw && word_width + this_width > bounds.x) {
+			goto draw_word;
+ret_newline: // Return point from goto
+
+			word_width = 0;
+			x = 0;
+			y += codepoint_height;
+		}
+
+		word_width += this_width;
+
+		if (!is_ws && !is_nl && !is_nul)
+			arraylist_pushback(&codepoints, &codepoint);
+	}
+
+	arraylist_destroy(&codepoints);
 }
 
 static void draw_image(const struct ui_image *img, Vector2 pos, Vector2 size,
@@ -621,13 +758,30 @@ static void ui_draw_label(const struct ui_descriptor *data)
 
 static void ui_draw_button(const struct ui_descriptor *data)
 {
-	ui_draw_label(data);
+	draw_rect(data);
+	draw_bound_text(&data->button.text, data->_abs_position,
+			data->_abs_size);
 }
 
 static void ui_draw_image(const struct ui_descriptor *data)
 {
 	draw_image(&data->image.img, data->_abs_position, data->_abs_size,
 		   data->transparency);
+}
+
+static void ui_draw_imagebutton(const struct ui_descriptor *data)
+{
+	ui_draw_image(data);
+}
+
+static void ui_draw_textbox(const struct ui_descriptor *data)
+{
+	draw_rect(data);
+	draw_bound_text(&data->textbox.text, data->_abs_position,
+			data->_abs_size);
+
+	//if (data->textbox.box.focused)
+	// 	draw_cursor(data->_abs_position, );
 }
 
 static void ui_draw_single(const struct ui_descriptor *data)
@@ -644,6 +798,9 @@ static void ui_draw_single(const struct ui_descriptor *data)
 		break;
 	case UIC_IMAGE:
 		ui_draw_image(data);
+		break;
+	case UIC_TEXTBOX:
+		ui_draw_textbox(data);
 		break;
 	default:
 		break;
@@ -692,51 +849,199 @@ static struct ui_object *ui_find_hovered_button(void)
 	for (size_t i = 0; i < click_area.nmemb; ++i) {
 		struct ui_object *button = click_area.buttons[i];
 		const struct ui_descriptor *data = button->data;
-		if (contained_within(mp, data->_abs_position, data->_abs_size))
+		if (contained_within(mp, data->_abs_position,
+				     data->_abs_size) &&
+		    button->data->visible)
 			return button;
 	}
 
 	return NULL;
 }
 
+static void lose_focus(void)
+{
+	struct evtbox_args args = { .textbox = click_area.focused };
+	evt_fire(&click_area.focused->data->textbox.box.events.focuslost,
+		 &args);
+	click_area.focused->data->textbox.box.focused = 0;
+	click_area.focused = NULL;
+}
+
+static void gain_focus(struct ui_object *textbox)
+{
+	struct evtbox_args args = { .textbox = textbox };
+	evt_fire(&textbox->data->textbox.box.events.focused, &args);
+	click_area.focused = textbox;
+	textbox->data->textbox.box.focused = 1;
+}
+
+static void button_lmbdown(struct ui_object *button, struct ui_button *btn)
+{
+	struct evtbtn_args args = {};
+
+	click_area.down_on = args.button = button;
+	evt_fire(&btn->events.lmb_down, &args);
+}
+
+static void textbox_lmbdown(struct ui_object *textbox)
+{
+	gain_focus(textbox);
+}
+
+static void handle_lmbdown(struct ui_object *on)
+{
+	if (click_area.focused != NULL)
+		lose_focus();
+
+	if (on == NULL)
+		return;
+
+	switch (on->data->class) {
+	case UIC_BUTTON:
+	case UIC_IMAGEBUTTON:
+		button_lmbdown(on, &on->data->button.btn);
+		break;
+	case UIC_TEXTBOX:
+		textbox_lmbdown(on);
+		break;
+	default:
+		break;
+	}
+}
+
+static void button_lmbup(struct ui_object *button, struct ui_button *btn)
+{
+	struct evtbtn_args args = {};
+	const _Bool hovers = button == click_area.down_on;
+
+	args.button = click_area.down_on;
+
+	if (button != NULL)
+		evt_fire(&button->data->button.btn.events.lmb_up, &args);
+	if (button == click_area.down_on && btn != NULL)
+		evt_fire(&btn->events.clicked, &args);
+}
+
+static void handle_lmbup(struct ui_object *on)
+{
+	if (on == NULL) {
+		button_lmbup(NULL, NULL);
+		return;
+	}
+
+	switch (on->data->class) {
+	case UIC_BUTTON:
+	case UIC_IMAGEBUTTON:
+		button_lmbup(on, &on->data->button.btn);
+		break;
+	default:
+		break;
+	}
+}
+
 void ui_resolve_mouse(void)
 {
-	const _Bool lmb_up = IsMouseButtonUp(MOUSE_LEFT_BUTTON);
-	const _Bool lmb_down = IsMouseButtonDown(MOUSE_LEFT_BUTTON);
-
-	struct evtbtn_args args = {};
+	const _Bool lmb_down = IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
+	const _Bool lmb_up = IsMouseButtonReleased(MOUSE_LEFT_BUTTON);
 
 	if (click_area.down_on == NULL && !lmb_down)
 		click_area.down_on = NULL;
 
 	struct ui_object *down_on = click_area.down_on;
 
-	if (down_on == NULL && lmb_down) {
+	if (lmb_down) {
 		struct ui_object *button = ui_find_hovered_button();
-		if (button == NULL)
-			return;
-
-		click_area.down_on = args.button = button;
-		evt_fire(&button->data->button.btn.events.lmb_down, &args);
+		handle_lmbdown(button);
 
 		return;
 	}
 
-	if (down_on != NULL && !lmb_down) {
+	if (lmb_up) {
 		struct ui_object *button = ui_find_hovered_button();
-		const _Bool hovers = button == down_on;
-
-		args.button = down_on;
-
-		evt_fire(&down_on->data->button.btn.events.lmb_up, &args);
-		if (button == down_on)
-			evt_fire(&button->data->button.btn.events.clicked,
-				 &args);
+		handle_lmbup(button);
 
 		click_area.down_on = NULL;
-
 		return;
 	}
+}
+
+static void text_resize_to(struct ui_text *text, size_t to)
+{
+	void *tmp = realloc(text->string, to);
+	if (tmp == NULL)
+		return;
+
+	text->string = tmp;
+	text->string[text->size] = 0;
+	text->capacity = to;
+}
+
+static void text_resize(struct ui_text *text)
+{
+	if (text->capacity <= TEXT_DEFAULT_CAPACITY / 2)
+		text_resize_to(text, TEXT_DEFAULT_CAPACITY);
+	else
+		text_resize_to(text, text->capacity * 2);
+}
+
+static void text_write(struct ui_text *text, char c, size_t at)
+{
+	if (text->size + sizeof c + 1 >= text->capacity)
+		text_resize(text);
+
+	char *s = text->string;
+
+	if (at == text->size) {
+		s[at] = c;
+		s[at + 1] = 0;
+		text->size++;
+		return;
+	}
+}
+
+static void text_erase(struct ui_text *text, size_t at)
+{
+	if (at > text->size)
+		return;
+
+	char *s = text->string;
+	s[at] = 0;
+	text->size--;
+}
+
+static void textbox_write(struct ui_object *textbox, char c)
+{
+	struct uie_textbox *tbox = &textbox->data->textbox;
+	struct ui_text *text = &tbox->text;
+	text_write(text, c, tbox->box.cursor++);
+}
+
+static void textbox_backspace(struct ui_object *textbox)
+{
+	struct uie_textbox *tbox = &textbox->data->textbox;
+	struct ui_text *text = &tbox->text;
+	if (tbox->box.cursor > 0)
+		text_erase(text, --tbox->box.cursor);
+}
+
+static void process_textbox_input(struct ui_object *textbox)
+{
+	const int c = GetCharPressed();
+
+	if (c > 0)
+		textbox_write(textbox, (char)c);
+
+	if (IsKeyPressed(KEY_BACKSPACE))
+		textbox_backspace(textbox);
+}
+
+void ui_resolve_keyboard(void)
+{
+	struct ui_object *focused = click_area.focused;
+	if (focused == NULL)
+		return;
+
+	process_textbox_input(focused);
 }
 
 static void ui_create_root(void)
@@ -795,6 +1100,16 @@ static void testbtn_event_function_u(void *args)
 	printf("Up!\n");
 }
 
+static void testbox_event_function_fd(void *args)
+{
+	printf("Focused!\n");
+}
+
+static void testbox_event_function_fl(void *args)
+{
+	printf("Focus lost!\n");
+}
+
 void ui_init(void)
 {
 	ui_setup_objlist();
@@ -820,15 +1135,8 @@ void ui_init(void)
 	brect->data->size.offset = (Vector2){ 140, 240 };
 	brect->data->color = BLUE;
 
-	struct ui_object *title = ui_create(UIC_LABEL, "title", root).object;
-	title->data->position.offset = (Vector2){ 0, 0 };
-	title->data->size = (UDim2){ { 0, 60 }, { 1, 0 } };
-	title->data->transparency = 1;
-	title->data->label.text.color = ORANGE;
-	ui_set_text(
-		title,
-		"Mathline [Still have to implement the line auto-wrapping]");
-	ui_set_font(title, "res/fnt/comic.ttf", 46);
+	const char *fontname = "res/fnt/dkcrayon-reg.otf";
+	const size_t fontsize = 20;
 
 	const Color stat_color = RAYWHITE;
 	const float stat_font_size = 20;
@@ -837,49 +1145,57 @@ void ui_init(void)
 	fps->data->position.offset = (Vector2){ 10, 70 };
 	fps->data->size = (UDim2){ { 0, 20 }, { 1, 0 } };
 	fps->data->transparency = 1;
-	fps->data->label.text.font.size = stat_font_size;
 	fps->data->label.text.color = stat_color;
-	ui_set_font(fps, "res/fnt/chalkduster.ttf", 20);
+	ui_set_fonttype(fps, UIF_DEBUG, stat_font_size);
 
 	struct ui_object *zoom = ui_create(UIC_LABEL, "zoom", root).object;
 	zoom->data->position.offset = (Vector2){ 10, 90 };
 	zoom->data->size = (UDim2){ { 0, 20 }, { 1, 0 } };
 	zoom->data->transparency = 1;
-	zoom->data->label.text.font.size = stat_font_size;
 	zoom->data->label.text.color = stat_color;
-	ui_set_font(zoom, "res/fnt/chalkduster.ttf", 20);
+	ui_set_fonttype(zoom, UIF_DEBUG, stat_font_size);
 
 	struct ui_object *target = ui_create(UIC_LABEL, "target", root).object;
 	target->data->position.offset = (Vector2){ 10, 110 };
 	target->data->size = (UDim2){ { 0, 20 }, { 1, 0 } };
 	target->data->transparency = 1;
-	target->data->label.text.font.size = stat_font_size;
 	target->data->label.text.color = stat_color;
-	ui_set_font(target, "res/fnt/chalkduster.ttf", 20);
+	ui_set_fonttype(target, UIF_DEBUG, stat_font_size);
 
 	struct ui_object *veloc = ui_create(UIC_LABEL, "veloc", root).object;
 	veloc->data->position.offset = (Vector2){ 10, 130 };
 	veloc->data->size = (UDim2){ { 0, 20 }, { 1, 0 } };
 	veloc->data->transparency = 1;
-	veloc->data->label.text.font.size = stat_font_size;
 	veloc->data->label.text.color = stat_color;
-	ui_set_font(veloc, "res/fnt/chalkduster.ttf", 20);
+	ui_set_fonttype(veloc, UIF_DEBUG, stat_font_size);
 
-	struct ui_object *testimg =
-		ui_create_ext(UIC_IMAGE, "dumimg", root,
-			      (struct ui_descriptor){
-				      .size.offset = (Vector2){ 100, 100 },
-				      .position.scale = (Vector2){ 0.5F, 0.9F },
-				      .anchor = (Vector2){ 0.5F, 1 },
-			      })
-			.object;
-	ui_set_image(testimg, "res/img/ui/lvlnumbtn.png");
+	//struct ui_object *testimg =
+	//	ui_create_ext(UIC_IMAGE, "dumimg", root,
+	//		      (struct ui_descriptor){
+	//			      .size.offset = (Vector2){ 100, 100 },
+	//			      .position.scale = (Vector2){ 0.5F, 0.9F },
+	//			      .anchor = (Vector2){ 0.5F, 1 },
+	//		      })
+	//		.object;
+	//ui_set_image(testimg, "res/img/ui/lvlnumbtn.png");
+
+	struct ui_object *title = ui_create(UIC_LABEL, "title", root).object;
+	title->data->position.offset = (Vector2){ 0, 0 };
+	title->data->size = (UDim2){ { 600, 260 }, { 0, 0 } };
+	title->data->transparency = 0.5F;
+	title->data->label.text.color = ORANGE;
+	title->data->label.text.autowrap = 1;
+	title->data->label.text.overflow = 1;
+	ui_set_text(
+		title,
+		"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\nWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
+	ui_set_fonttype(title, UIF_CRAYON, 24);
 
 	struct ui_object *button = ui_create(UIC_BUTTON, "btn", root).object;
 	button->data->size.offset = (Vector2){ 300, 80 };
 	button->data->position.offset = (Vector2){ 100, 500 };
 	ui_set_text(button, "click me!\n\nf(x) = 2 * x + 5");
-	ui_set_font(button, "res/fnt/chalkduster.ttf", 24);
+	ui_set_fonttype(button, UIF_CRAYON, stat_font_size + 5);
 
 	struct event *e_c = &button->data->button.btn.events.clicked;
 	struct event *e_d = &button->data->button.btn.events.lmb_down;
@@ -888,6 +1204,19 @@ void ui_init(void)
 	evt_connect(e_c, testbtn_event_function_c);
 	evt_connect(e_d, testbtn_event_function_d);
 	evt_connect(e_u, testbtn_event_function_u);
+
+	struct ui_object *textbox = ui_create(UIC_TEXTBOX, "box", root).object;
+	textbox->data->position.offset = (Vector2){ 500, 500 };
+	textbox->data->textbox.text.autowrap = 1;
+	textbox->data->textbox.text.overflow = 1;
+	ui_init_text(textbox);
+	ui_set_fonttype(textbox, UIF_DEBUG, stat_font_size);
+
+	struct event *e_fd = &textbox->data->textbox.box.events.focused;
+	struct event *e_fl = &textbox->data->textbox.box.events.focuslost;
+
+	evt_connect(e_fd, testbox_event_function_fd);
+	evt_connect(e_fl, testbox_event_function_fl);
 }
 
 void update_stat_counters(void)
