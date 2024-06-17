@@ -9,6 +9,7 @@ struct window window = { 0 };
 
 static void wnd_init(void)
 {
+	SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
 	InitWindow(SCREEN_W, SCREEN_H, GAME_NAME);
 	SetTargetFPS(TARGET_FPS);
 

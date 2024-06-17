@@ -19,8 +19,6 @@ struct {
 static void setup_camera(void)
 {
 	game.camera.target = (Vector2){ 0.0F, 0.0F };
-	game.camera.offset = (Vector2){ game.window->screen_w / 2.0F,
-					game.window->screen_h / 2.0F };
 	game.camera.rotation = 0.0F;
 	game.camera.zoom = 1.0F;
 
@@ -85,8 +83,20 @@ static void redraw_game(void)
 	render();
 }
 
+static void window_update(void)
+{
+	const int w = GetScreenWidth();
+	const int h = GetScreenHeight();
+	game.window->screen_w = (float)w;
+	game.window->screen_h = (float)h;
+
+	game.camera.offset.x = game.window->screen_w / 2.0F;
+	game.camera.offset.y = game.window->screen_h / 2.0F;
+}
+
 void fixed_update(float fdt)
 {
+	window_update();
 	physics_update(fdt);
 }
 

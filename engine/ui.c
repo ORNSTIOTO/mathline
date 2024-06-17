@@ -769,6 +769,11 @@ static void ui_draw_image(const struct ui_descriptor *data)
 		   data->transparency);
 }
 
+static void ui_draw_imagebutton(const struct ui_descriptor *data)
+{
+	ui_draw_image(data);
+}
+
 static void ui_draw_textbox(const struct ui_descriptor *data)
 {
 	draw_rect(data);
@@ -844,7 +849,9 @@ static struct ui_object *ui_find_hovered_button(void)
 	for (size_t i = 0; i < click_area.nmemb; ++i) {
 		struct ui_object *button = click_area.buttons[i];
 		const struct ui_descriptor *data = button->data;
-		if (contained_within(mp, data->_abs_position, data->_abs_size))
+		if (contained_within(mp, data->_abs_position,
+				     data->_abs_size) &&
+		    button->data->visible)
 			return button;
 	}
 
