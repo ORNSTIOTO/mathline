@@ -2,6 +2,7 @@
 #include "graph.h"
 #include "player.h"
 #include "engine/tex.h"
+#include <raylib.h>
 #include <rlgl.h>
 #include <raymath.h>
 #include <malloc.h>
@@ -21,6 +22,7 @@ Texture2D dest_tex;
 
 static float __f(float x)
 {
+	//return x;
 	//return sinf(powf(x, x)) * x;
 	return sinf(x);
 }
@@ -86,13 +88,16 @@ void render(void)
 		render_star();
 
 	const struct player *player = game.player;
-	const Vector2 size = { player->radius * 2, player->radius * 2 };
+	const Vector2 size = { player->tex_size * 2, player->tex_size * 2 };
+	DrawCircleV(player->pos, player->radius, BLUE);
 	texture_draw(&player->tex, player->pos, size, player->rotation,
 		     player->tint);
-	DrawLineV(player->pos,
-		  (Vector2){ player->pos.x + player->body.debug.x,
-			     player->pos.y + player->body.debug.y },
-		  RED);
+
+	DrawCircleV(player->body.collision, 2, ORANGE);
+	DrawLineV(player->pos, (Vector2){
+		player->pos.x + player->body.debug.x,
+		player->pos.y + player->body.debug.y
+		}, RED);
 }
 
 void render_feed_leveldata(const struct leveldata *data)

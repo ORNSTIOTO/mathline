@@ -8,14 +8,16 @@ struct player {
 	float radius, rotation;
 
 	Texture2D tex;
+	float tex_size;
 	Color tint;
 
 	struct {
-		Vector2 linear_velocity, linear_accel;
-		Vector2 force;
-		float moment_of_inertia, torque;
+		float mass;
+		Vector2 linear_velocity, linear_accel, force, friction;
 		float angular_velocity;
-		Vector2 debug;
+		float torque, moment_of_inertia;
+		Vector2 collision, coll_nor, debug;
+		int on_ground;
 	} body;
 };
 

@@ -95,6 +95,17 @@ static void handle_input(void)
 		game.camera.target.y -= mdy / game.camera.zoom;
 	}
 
+	// FIXME debug moving
+	if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON) && (mdx != 0 || mdy != 0)) {
+		game.player->pos.x += mdx;
+		game.player->pos.y += mdy;
+	}
+	// FIXME debug moving
+	if (IsMouseButtonDown(MOUSE_MIDDLE_BUTTON) && (mdx != 0 || mdy != 0)) {
+		game.player->body.linear_velocity.x += mdx;
+		game.player->body.linear_velocity.y += mdy;
+	}
+
 	// zooming
 	const float scroll = GetMouseWheelMove();
 	if (scroll > 0) {
@@ -139,7 +150,10 @@ static void window_update(void)
 void fixed_update(float fdt)
 {
 	window_update();
-	physics_update(fdt);
+	//if (IsKeyDown(KEY_F)) {
+		physics_update(fdt);
+	//}
+	
 }
 
 void update(void)
@@ -152,8 +166,8 @@ void update(void)
 void late_update(float dt)
 {
 	lerp_camera_zoom(dt);
-	game.camera.target.x = game.player->pos.x;
-	game.camera.target.y = game.player->pos.y;
+	//game.camera.target.x = game.player->pos.x;
+	//game.camera.target.y = game.player->pos.y;
 }
 
 void final_update(void)

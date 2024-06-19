@@ -4,12 +4,7 @@
 #include <math.h>
 #include <raylib.h>
 
-struct body {
-	float mass;
-	Vector2 linear_velocity, linear_accel, force;
-	float angular_velocity;
-	float moment_of_inertia;
-};
+
 
 void physics_update(float fdt);
 void physics_init(void);
