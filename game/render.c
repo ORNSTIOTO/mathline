@@ -16,6 +16,7 @@ static struct {
 
 static float __f(float x)
 {
+	//return x;
 	//return sinf(powf(x, x)) * x;
 	return sinf(x);
 }
@@ -46,5 +47,10 @@ void render(void)
 	DrawCircleV(player->pos, player->radius, BLUE);
 	texture_draw(&player->tex, player->pos, size, player->rotation,
 		     player->tint);
-	DrawLineV(player->pos, (Vector2){player->pos.x+player->body.linear_velocity.x,player->pos.y+player->body.linear_velocity.y}, RED);
+
+	DrawCircleV(player->body.collision, 2, ORANGE);
+	DrawLineV(player->pos, (Vector2){
+		player->pos.x + player->body.debug.x,
+		player->pos.y + player->body.debug.y
+		}, RED);
 }

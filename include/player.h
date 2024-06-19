@@ -17,6 +17,7 @@ struct player {
 		float angular_velocity;
 		float torque, moment_of_inertia;
 		Vector2 collision, coll_nor, debug;
+		int on_ground;
 	} body;
 };
 
