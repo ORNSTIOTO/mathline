@@ -5,6 +5,7 @@
 #include "game.h"
 #include "player.h"
 #include "errno.h"
+#include <raylib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -1110,6 +1111,13 @@ static void testbox_event_function_fl(void *args)
 	printf("Focus lost!\n");
 }
 
+
+
+
+static void lvl_button_click(void *args)
+{
+	printf("Stars\n");
+}
 void ui_init(void)
 {
 	ui_setup_objlist();
@@ -1169,41 +1177,63 @@ void ui_init(void)
 	veloc->data->label.text.color = stat_color;
 	ui_set_fonttype(veloc, UIF_DEBUG, stat_font_size);
 
-	//struct ui_object *testimg =
-	//	ui_create_ext(UIC_IMAGE, "dumimg", root,
-	//		      (struct ui_descriptor){
-	//			      .size.offset = (Vector2){ 100, 100 },
-	//			      .position.scale = (Vector2){ 0.5F, 0.9F },
-	//			      .anchor = (Vector2){ 0.5F, 1 },
-	//		      })
-	//		.object;
-	//ui_set_image(testimg, "res/img/ui/lvlnumbtn.png");
+	// struct ui_object *testimg =
+	// 	ui_create_ext(UIC_IMAGE, "dumimg", root,
+	// 		      (struct ui_descriptor){
+	// 			      .size.offset = (Vector2){ 1,1 },
+	// 			      .position.scale = (Vector2){ 1, 1 },
+	// 			      .anchor = (Vector2){ 1, 1 },
+	// 		      })
+	// 		.object;
+	// testimg->data->size = (UDim2){ { 0, 0 }, { 1, 1 } };
+	// ui_set_image(testimg, "res/img/ui/thumbnail.png");
+
+	
+	// struct ui_object *testimg = ui_create(UIC_IMAGE, "dumimg", root).object;
+	// testimg->data->position = (UDim2){ { 0,0 }, { 0,0 } };
+	// testimg->data->size = (UDim2){ { 0,0 }, { 1,1 } };
+	// ui_set_image(testimg, "res/img/ui/background_lvl.png");
 
 	struct ui_object *title = ui_create(UIC_LABEL, "title", root).object;
 	title->data->position.offset = (Vector2){ 0, 0 };
-	title->data->size = (UDim2){ { 600, 260 }, { 0, 0 } };
-	title->data->transparency = 0.5F;
-	title->data->label.text.color = ORANGE;
+	title->data->size = (UDim2){ { 900, 260 }, { 0, 0 } };
+	title->data->transparency = 1;
+	title->data->label.text.color = DARKBLUE;
 	title->data->label.text.autowrap = 1;
 	title->data->label.text.overflow = 1;
-	ui_set_text(
-		title,
-		"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\nWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
-	ui_set_fonttype(title, UIF_CRAYON, 24);
+	ui_set_text(title, "FUNctions");
+	ui_set_fonttype(title, UIF_CRAYON, 120);
 
-	struct ui_object *button = ui_create(UIC_BUTTON, "btn", root).object;
-	button->data->size.offset = (Vector2){ 300, 80 };
-	button->data->position.offset = (Vector2){ 100, 500 };
-	ui_set_text(button, "click me!\n\nf(x) = 2 * x + 5");
-	ui_set_fonttype(button, UIF_CRAYON, stat_font_size + 5);
+	//#pragma region lvl_ui
+	struct ui_object *lvl1 = ui_create(UIC_BUTTON, "lvl1", root).object;
+	lvl1->data->position = (UDim2){ { 0,-55 }, { .2f,.5f } };
+	lvl1->data->size = (UDim2){ { 101,110 }, { 0,0 } };
+	lvl1->data->transparency = 1;
+	ui_set_text(lvl1, " ");
+	ui_set_fonttype(lvl1, UIF_DEBUG, 1);
 
-	struct event *e_c = &button->data->button.btn.events.clicked;
-	struct event *e_d = &button->data->button.btn.events.lmb_down;
-	struct event *e_u = &button->data->button.btn.events.lmb_up;
+	struct event *e_lvl1 = &lvl1->data->button.btn.events.clicked;
+	evt_connect(e_lvl1, lvl_button_click);
 
-	evt_connect(e_c, testbtn_event_function_c);
-	evt_connect(e_d, testbtn_event_function_d);
-	evt_connect(e_u, testbtn_event_function_u);
+	struct ui_object *lvl1_i = ui_create(UIC_IMAGE, "lvl1_i", root).object;
+	lvl1_i->data->position = (UDim2){ { 0,-55 }, { .2f,.5f } };
+	lvl1_i->data->size = (UDim2){ { 101,110 }, { 0,0 } };
+	ui_set_image(lvl1_i, "res/img/ui/btn_s.png");
+
+	struct ui_object *lvl1_stars = ui_create(UIC_IMAGE, "lvl1_stars", root).object;
+	lvl1_stars->data->position = (UDim2){ { 0,45 }, { .2f,.5f } };
+	lvl1_stars->data->size = (UDim2){ { 201/2,105/2 }, { 0,0 } };
+	ui_set_image(lvl1_stars, "res/img/ui/stars0.png");
+
+	//#pragma endregion
+
+	// struct event *e_c = &button->data->button.btn.events.clicked;
+	// struct event *e_d = &button->data->button.btn.events.lmb_down;
+	// struct event *e_u = &button->data->button.btn.events.lmb_up;
+
+	// evt_connect(e_c, testbtn_event_function_c);
+	// evt_connect(e_d, testbtn_event_function_d);
+	// evt_connect(e_u, testbtn_event_function_u);
 
 	struct ui_object *textbox = ui_create(UIC_TEXTBOX, "box", root).object;
 	textbox->data->position.offset = (Vector2){ 500, 500 };
@@ -1230,7 +1260,8 @@ void update_stat_counters(void)
 	struct ui_object *veloc = ui_get("veloc");
 
 	ui_set_ftext(fps, "fps: %d", GetFPS());
-	ui_set_ftext(zoom, "zoom: %.08f", game.camera.zoom);
+	//ui_set_ftext(zoom, "zoom: %.08f", game.camera.zoom);
+	ui_set_ftext(zoom, "on ground: %i", game.player->body.on_ground);
 	ui_set_ftext(target, "target: { %.04f, %.04f }", game.camera.target.x,
 		     game.camera.target.y);
 	ui_set_ftext(veloc, "velocity: { %.02f, %.02f }",
