@@ -387,7 +387,7 @@ void render_graph(void)
 	}
 }
 
-static void render_fgraph_old(float (*f)(float x), Color color)
+void render_fgraph_old(float (*f)(float x), Color color)
 {
 	const float bl = scr_border_left();
 	const float br = scr_border_right();

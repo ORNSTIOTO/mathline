@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <malloc.h>
 
-#define DEBUG_KEYS 0
+#define DEBUG_KEYS 1
 
 struct game game = { 0 };
 
@@ -52,7 +52,7 @@ void game_init(struct window *window)
 
 	//build_fgraph("((4x - 1) * 5 + 3 - 8 / (x + 3)) / 2");
 
-	build_fgraph("(1/10000)*x*x*x");
+	//build_fgraph("(1/10000)*x*x*x");
 
 	physics_pause();
 
@@ -104,8 +104,8 @@ static void handle_input(void)
 
 	// dragging
 	if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && (mdx != 0 || mdy != 0)) {
-		//game.camera.target.x -= mdx / game.camera.zoom;
-		//game.camera.target.y -= mdy / game.camera.zoom;
+		game.camera.target.x -= mdx / game.camera.zoom;
+		game.camera.target.y -= mdy / game.camera.zoom;
 	}
 
 	// FIXME debug moving

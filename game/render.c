@@ -78,9 +78,11 @@ static void render_star(void)
 
 void render(void)
 {
-	texture_draw(&game.background, game.camera.target, (Vector2){game.window->screen_w / game.camera.zoom, game.window->screen_h / game.camera.zoom}, 0,
-		     WHITE);
-	render_graph();
+	texture_draw(&game.background, game.camera.target,
+		     (Vector2){ game.window->screen_w / game.camera.zoom,
+				game.window->screen_h / game.camera.zoom },
+		     0, WHITE);
+	render_fgraph_old(__f, RED);
 
 	render_obstacles();
 	render_destination();

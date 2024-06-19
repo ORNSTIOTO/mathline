@@ -1203,16 +1203,16 @@ void ui_init(void)
 	ui_set_text(tips, game.tip);
 	ui_set_fonttype(tips, UIF_CRAYON, 30);
 
-	struct ui_object *formula =
-		ui_create(UIC_TEXTBOX, "formula", root).object;
-	formula->data->position = (UDim2){ { 0, 100 }, { 1, 0 } };
-	formula->data->size = (UDim2){ { 300, 100 }, { 0, 0 } };
-	formula->data->anchor = (Vector2){ 1, 0 };
-	ui_init_text(formula);
-	ui_set_fonttype(formula, UIF_CRAYON, 30);
-
-	evt_connect(&formula->data->textbox.box.events.focuslost,
-		    formula_box_refresh);
+	//	struct ui_object *formula =
+	//		ui_create(UIC_TEXTBOX, "formula", root).object;
+	//	formula->data->position = (UDim2){ { 0, 100 }, { 1, 0 } };
+	//	formula->data->size = (UDim2){ { 300, 100 }, { 0, 0 } };
+	//	formula->data->anchor = (Vector2){ 1, 0 };
+	//	ui_init_text(formula);
+	//	ui_set_fonttype(formula, UIF_CRAYON, 30);
+	//
+	//	evt_connect(&formula->data->textbox.box.events.focuslost,
+	//		    formula_box_refresh);
 
 	/*//#pragma region lvl_ui
 	struct ui_object *lvl1 = ui_create(UIC_BUTTON, "lvl1", root).object;
