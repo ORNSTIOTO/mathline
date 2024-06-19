@@ -12,6 +12,7 @@ struct game {
 	struct player *player;
 	graph_t *graphs;
 	int ngraphs;
+	Texture2D background;
 };
 
 void game_init(struct window *window);
