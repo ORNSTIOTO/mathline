@@ -1,4 +1,6 @@
 #include "game.h"
+#include "engine/tex.h"
+#include "level.h"
 #include "player.h"
 #include "gameconfig.h"
 #include "graph.h"
@@ -11,6 +13,7 @@
 #include <raymath.h>
 #include <string.h>
 #include <stdio.h>
+#include <malloc.h>
 
 #define DEBUG_KEYS 1
 
@@ -29,15 +32,25 @@ static void setup_camera(void)
 	zoom.from = zoom.to = game.camera.zoom;
 }
 
+static void background_init(void)
+{
+	texture_load(&game.background, "res/img/ui/back1line.png");
+}
+
 void game_init(struct window *window)
 {
 	game.window = window;
+	game.tip = malloc(32);
+	strcpy(game.tip, "press P to unpause");
 
 	setup_camera();
 	physics_init();
 	render_init();
 	player_init();
 	ui_init();
+	background_init();
+	
+	//build_fgraph("((4x - 1) * 5 + 3 - 8 / (x + 3)) / 2");
 
 	build_fgraph("(1/10000)*x*x*x");
 
@@ -91,8 +104,8 @@ static void handle_input(void)
 
 	// dragging
 	if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && (mdx != 0 || mdy != 0)) {
-		game.camera.target.x -= mdx / game.camera.zoom;
-		game.camera.target.y -= mdy / game.camera.zoom;
+		//game.camera.target.x -= mdx / game.camera.zoom;
+		//game.camera.target.y -= mdy / game.camera.zoom;
 	}
 
 	// FIXME debug moving
@@ -107,16 +120,16 @@ static void handle_input(void)
 	}
 
 	// zooming
-	const float scroll = GetMouseWheelMove();
-	if (scroll > 0) {
-		zoom.from = game.camera.zoom;
-		zoom.to = zoom.from * (1.0F + ZOOM_DELTA);
-		zoom.lerp = 0;
-	} else if (scroll < 0) {
-		zoom.from = game.camera.zoom;
-		zoom.to = zoom.from * (1.0F - ZOOM_DELTA);
-		zoom.lerp = 0;
-	}
+	// const float scroll = GetMouseWheelMove();
+	// if (scroll > 0) {
+	// 	zoom.from = game.camera.zoom;
+	// 	zoom.to = zoom.from * (1.0F + ZOOM_DELTA);
+	// 	zoom.lerp = 0;
+	// } else if (scroll < 0) {
+	// 	zoom.from = game.camera.zoom;
+	// 	zoom.to = zoom.from * (1.0F - ZOOM_DELTA);
+	// 	zoom.lerp = 0;
+	// }
 }
 
 static void lerp_camera_zoom(float dt)
@@ -129,6 +142,14 @@ static void lerp_camera_zoom(float dt)
 
 	zoom.lerp = Clamp(zoom.lerp + ZOOM_RATE * dt, 0.0F, 1.0F);
 	game.camera.zoom = Lerp(zoom.from, zoom.to, zoom.lerp);
+}
+
+static void check_for_lose(void)
+{
+	if (game.player->pos.y>700) {
+		strcpy(game.tip, "      reloaded level");
+		reload_level();
+	}
 }
 
 static void redraw_game(void)
@@ -158,6 +179,7 @@ void fixed_update(float fdt)
 void update(void)
 {
 	level_control();
+	check_for_lose();
 	handle_input();
 	update_stat_counters();
 }

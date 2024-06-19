@@ -22,7 +22,7 @@ Texture2D dest_tex;
 
 static float __f(float x)
 {
-	//return x;
+	return x;
 	//return sinf(powf(x, x)) * x;
 	return sinf(x);
 }
@@ -78,6 +78,8 @@ static void render_star(void)
 
 void render(void)
 {
+	texture_draw(&game.background, game.camera.target, (Vector2){game.window->screen_w / game.camera.zoom, game.window->screen_h / game.camera.zoom}, 0,
+		     WHITE);
 	render_graph();
 
 	render_obstacles();
