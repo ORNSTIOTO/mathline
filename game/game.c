@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <malloc.h>
 
-#define DEBUG_KEYS 1
+#define DEBUG_KEYS 0
 
 struct game game = { 0 };
 
@@ -49,7 +49,7 @@ void game_init(struct window *window)
 	player_init();
 	ui_init();
 	background_init();
-	
+
 	//build_fgraph("((4x - 1) * 5 + 3 - 8 / (x + 3)) / 2");
 
 	build_fgraph("(1/10000)*x*x*x");
@@ -146,7 +146,7 @@ static void lerp_camera_zoom(float dt)
 
 static void check_for_lose(void)
 {
-	if (game.player->pos.y>700) {
+	if (game.player->pos.y > 700) {
 		strcpy(game.tip, "      reloaded level");
 		reload_level();
 	}

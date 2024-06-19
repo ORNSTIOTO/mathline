@@ -2,6 +2,7 @@
 #include "engine/tex.h"
 #include "engine/hash.h"
 #include "engine/arraylist.h"
+#include "graph.h"
 #include "game.h"
 #include "player.h"
 #include "errno.h"
@@ -1111,13 +1112,17 @@ static void testbox_event_function_fl(void *args)
 	printf("Focus lost!\n");
 }
 
-
-
-
 static void lvl_button_click(void *args)
 {
 	printf("Stars\n");
 }
+
+static void formula_box_refresh(void *a)
+{
+	struct evtbox_args *args = a;
+	build_fgraph(args->textbox->data->textbox.text.string);
+}
+
 void ui_init(void)
 {
 	ui_setup_objlist();
@@ -1172,11 +1177,10 @@ void ui_init(void)
 	// testimg->data->size = (UDim2){ { 0, 0 }, { 1, 1 } };
 	// ui_set_image(testimg, "res/img/ui/thumbnail.png");
 
-	
 	// struct ui_object *testimg = ui_create(UIC_IMAGE, "dumimg", root).object;
 	// testimg->data->position = (UDim2){ { 0,0 }, { 0,0 } };
 	// testimg->data->size = (UDim2){ { 0,0 }, { 1,1 } };
- 	// ui_set_image(testimg, "res/img/ui/background_lvl.png");
+	// ui_set_image(testimg, "res/img/ui/background_lvl.png");
 
 	struct ui_object *title = ui_create(UIC_LABEL, "title", root).object;
 	title->data->position.offset = (Vector2){ 0, 0 };
@@ -1198,6 +1202,17 @@ void ui_init(void)
 	tips->data->label.text.overflow = 1;
 	ui_set_text(tips, game.tip);
 	ui_set_fonttype(tips, UIF_CRAYON, 30);
+
+	struct ui_object *formula =
+		ui_create(UIC_TEXTBOX, "formula", root).object;
+	formula->data->position = (UDim2){ { 0, 100 }, { 1, 0 } };
+	formula->data->size = (UDim2){ { 300, 100 }, { 0, 0 } };
+	formula->data->anchor = (Vector2){ 1, 0 };
+	ui_init_text(formula);
+	ui_set_fonttype(formula, UIF_CRAYON, 30);
+
+	evt_connect(&formula->data->textbox.box.events.focuslost,
+		    formula_box_refresh);
 
 	/*//#pragma region lvl_ui
 	struct ui_object *lvl1 = ui_create(UIC_BUTTON, "lvl1", root).object;
@@ -1254,7 +1269,7 @@ void update_stat_counters(void)
 	struct ui_object *target = ui_get("target");
 	struct ui_object *veloc = ui_get("veloc");
 	struct ui_object *tips = ui_get("tips");
-	
+
 	ui_set_ftext(fps, "fps: %d", GetFPS());
 	//ui_set_ftext(zoom, "zoom: %.08f", game.camera.zoom);
 	ui_set_ftext(zoom, "on ground: %i", game.player->body.on_ground);
