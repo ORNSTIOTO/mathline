@@ -1119,22 +1119,6 @@ void ui_init(void)
 
 	struct ui_object *root = ui_get_root();
 
-	struct ui_object *rrect = ui_create(UIC_FRAME, "red", root).object;
-	rrect->data->anchor = (Vector2){ 1.0F, 0 };
-	rrect->data->position = (UDim2){ { -1.0F, 0 }, { 1, 0 } };
-	rrect->data->size = (UDim2){ { 230, 0 }, { 0, 1 } };
-	rrect->data->color = RED;
-
-	struct ui_object *grect = ui_create(UIC_FRAME, "green", rrect).object;
-	grect->data->position.offset = (Vector2){ 140, 320 };
-	grect->data->size.offset = (Vector2){ 280, 190 };
-	grect->data->color = GREEN;
-
-	struct ui_object *brect = ui_create(UIC_FRAME, "blue", root).object;
-	brect->data->position.offset = (Vector2){ 80, 250 };
-	brect->data->size.offset = (Vector2){ 140, 240 };
-	brect->data->color = BLUE;
-
 	const char *fontname = "res/fnt/dkcrayon-reg.otf";
 	const size_t fontsize = 20;
 
@@ -1179,44 +1163,16 @@ void ui_init(void)
 	//		.object;
 	//ui_set_image(testimg, "res/img/ui/lvlnumbtn.png");
 
-	struct ui_object *title = ui_create(UIC_LABEL, "title", root).object;
-	title->data->position.offset = (Vector2){ 0, 0 };
-	title->data->size = (UDim2){ { 600, 260 }, { 0, 0 } };
-	title->data->transparency = 0.5F;
-	title->data->label.text.color = ORANGE;
-	title->data->label.text.autowrap = 1;
-	title->data->label.text.overflow = 1;
-	ui_set_text(
-		title,
-		"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\nWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
-	ui_set_fonttype(title, UIF_CRAYON, 24);
+	struct ui_object *lvl1_i = ui_create(UIC_IMAGE, "lvl1_i", root).object;
+	lvl1_i->data->position = (UDim2){ { 0, -55 }, { 0.2F, 0.5F } };
+	lvl1_i->data->size = (UDim2){ { 101, 110 }, { 0, 0 } };
+	ui_set_image(lvl1_i, "res/img/ui/lvlnumbtn.png");
 
-	struct ui_object *button = ui_create(UIC_BUTTON, "btn", root).object;
-	button->data->size.offset = (Vector2){ 300, 80 };
-	button->data->position.offset = (Vector2){ 100, 500 };
-	ui_set_text(button, "click me!\n\nf(x) = 2 * x + 5");
-	ui_set_fonttype(button, UIF_CRAYON, stat_font_size + 5);
-
-	struct event *e_c = &button->data->button.btn.events.clicked;
-	struct event *e_d = &button->data->button.btn.events.lmb_down;
-	struct event *e_u = &button->data->button.btn.events.lmb_up;
-
-	evt_connect(e_c, testbtn_event_function_c);
-	evt_connect(e_d, testbtn_event_function_d);
-	evt_connect(e_u, testbtn_event_function_u);
-
-	struct ui_object *textbox = ui_create(UIC_TEXTBOX, "box", root).object;
-	textbox->data->position.offset = (Vector2){ 500, 500 };
-	textbox->data->textbox.text.autowrap = 1;
-	textbox->data->textbox.text.overflow = 1;
-	ui_init_text(textbox);
-	ui_set_fonttype(textbox, UIF_DEBUG, stat_font_size);
-
-	struct event *e_fd = &textbox->data->textbox.box.events.focused;
-	struct event *e_fl = &textbox->data->textbox.box.events.focuslost;
-
-	evt_connect(e_fd, testbox_event_function_fd);
-	evt_connect(e_fl, testbox_event_function_fl);
+	struct ui_object *lvl1_s = ui_create(UIC_IMAGE, "lvl1_s", root).object;
+	lvl1_s->data->position.offset = (Vector2){ 100, -55 };
+	lvl1_s->data->position.scale = (Vector2){ 0.2F, 0.5F };
+	lvl1_s->data->size = (UDim2){ { 201, 110 }, { 0, 0 } };
+	ui_set_image(lvl1_s, "res/img/destination.png");
 }
 
 void update_stat_counters(void)

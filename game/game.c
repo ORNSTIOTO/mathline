@@ -1,6 +1,7 @@
 #include "game.h"
 #include "player.h"
 #include "gameconfig.h"
+#include "graph.h"
 
 #include "engine/render.h"
 #include "engine/physics.h"
@@ -8,7 +9,10 @@
 
 #include <raylib.h>
 #include <raymath.h>
+#include <string.h>
 #include <stdio.h>
+
+#define DEBUG_KEYS 1
 
 struct game game = { 0 };
 
@@ -34,6 +38,25 @@ void game_init(struct window *window)
 	render_init();
 	player_init();
 	ui_init();
+
+	//build_fgraph("((4x - 1) * 5 + 3 - 8 / (x + 3)) / 2");
+
+	physics_pause();
+
+	struct arraylist obstacles =
+		arraylist_create(sizeof(struct obstacle), 1);
+	struct obstacle ob1 = { .pos = (Vector2){ 10, -30 },
+				.size = (Vector2){ 100, 45 },
+				30 };
+	arraylist_pushback(&obstacles, &ob1);
+	struct leveldata test = {
+		.a = (Vector2){ 0, -300 },
+		.b = (Vector2){ 0, -20 },
+		.star = (Vector2){ 0, -100 },
+		.obstacles = obstacles,
+		.rd_grf_areas = (struct arraylist){ 0 },
+	};
+	load_level(test);
 }
 
 static void keyboard_debug(void)
@@ -54,7 +77,9 @@ static void keyboard_debug(void)
 
 static void handle_input(void)
 {
+#if DEBUG_KEYS == 1
 	keyboard_debug();
+#endif
 	ui_resolve_keyboard();
 
 	const Vector2 mouse_delta = GetMouseDelta();
@@ -119,6 +144,7 @@ void fixed_update(float fdt)
 
 void update(void)
 {
+	level_control();
 	handle_input();
 	update_stat_counters();
 }

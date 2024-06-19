@@ -20,6 +20,9 @@ struct player {
 };
 
 _Bool player_collides(Vector2 *point);
+_Bool player_collides_with(Vector2 p);
 void player_init(void);
+
+void player_move(Vector2 to);
 
 #endif

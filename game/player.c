@@ -49,6 +49,11 @@ _Bool player_collides(Vector2 *point)
 	return 0;
 }
 
+_Bool player_collides_with(Vector2 p)
+{
+	return player_contained(p);
+}
+
 void player_init(void)
 {
 	game.player = &player;
@@ -58,4 +63,9 @@ void player_init(void)
 	player.tint = (Color){ 255, 255, 255, 255 };
 
 	texture_load(&player.tex, "res/img/ball/puffer.png");
+}
+
+void player_move(Vector2 to)
+{
+	player.pos = to;
 }
