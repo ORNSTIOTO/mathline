@@ -16,7 +16,8 @@ static _Bool player_contained(Vector2 p, float *distance)
 {
 	//printf("p { %f, %f }\n", p.x, p.y);
 	const Vector2 v = { player.pos.x - p.x, player.pos.y - p.y };
-	*distance = Vector2Length(v);
+	if (distance != NULL)
+		*distance = Vector2Length(v);
 	return Vector2Length(v) <= player.radius;
 }
 
@@ -26,7 +27,7 @@ static _Bool player_collides_with_graph(graph_t graph, Vector2 *point)
 
 	const int precision = 10;
 	const float px = player.pos.x;
-	
+
 	float old_dist = INFINITY;
 	float dist;
 
@@ -36,14 +37,14 @@ static _Bool player_collides_with_graph(graph_t graph, Vector2 *point)
 			-graph((float)x / (float)precision / GRAPH_SCALE);
 		const Vector2 p = { (float)x / (float)precision,
 				    y * GRAPH_SCALE };
-		
+
 		if (player_contained(p, &dist)) {
 			if (dist < old_dist) {
 				old_dist = dist;
 				point->x = p.x;
 				point->y = p.y;
 			}
-			
+
 			//return 1;
 		}
 	}
@@ -64,7 +65,7 @@ _Bool player_collides(Vector2 *point)
 
 _Bool player_collides_with(Vector2 p)
 {
-	return player_contained(p);
+	return player_contained(p, NULL);
 }
 
 void player_init(void)
@@ -80,7 +81,6 @@ void player_init(void)
 
 	player.body.mass = 1;
 	player.body.moment_of_inertia = calculate_circle_inertia(player.radius);
-	
 }
 
 void player_move(Vector2 to)

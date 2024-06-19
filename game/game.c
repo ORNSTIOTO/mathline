@@ -39,7 +39,7 @@ void game_init(struct window *window)
 	player_init();
 	ui_init();
 
-	//build_fgraph("((4x - 1) * 5 + 3 - 8 / (x + 3)) / 2");
+	build_fgraph("(1/10000)*x*x*x");
 
 	physics_pause();
 
@@ -151,9 +151,8 @@ void fixed_update(float fdt)
 {
 	window_update();
 	//if (IsKeyDown(KEY_F)) {
-		physics_update(fdt);
+	physics_update(fdt);
 	//}
-	
 }
 
 void update(void)

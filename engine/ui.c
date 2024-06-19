@@ -1168,7 +1168,8 @@ void ui_init(void)
 	lvl1_i->data->size = (UDim2){ { 101, 110 }, { 0, 0 } };
 	ui_set_image(lvl1_i, "res/img/ui/lvlnumbtn.png");
 
-	struct ui_object *lvl1_s = ui_create(UIC_IMAGE, "lvl1_s", root).object;
+	struct ui_object *lvl1_s =
+		ui_create(UIC_IMAGE, "lvlsdsdasasd", root).object;
 	lvl1_s->data->position.offset = (Vector2){ 100, -55 };
 	lvl1_s->data->position.scale = (Vector2){ 0.2F, 0.5F };
 	lvl1_s->data->size = (UDim2){ { 201, 110 }, { 0, 0 } };

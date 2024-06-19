@@ -78,8 +78,7 @@ static void render_star(void)
 
 void render(void)
 {
-	for (int i = 0; i < game.ngraphs; ++i)
-		render_fgraph(game.graphs[i], i % 2 == 0 ? RED : BLUE);
+	render_graph();
 
 	render_obstacles();
 	render_destination();
@@ -94,10 +93,10 @@ void render(void)
 		     player->tint);
 
 	DrawCircleV(player->body.collision, 2, ORANGE);
-	DrawLineV(player->pos, (Vector2){
-		player->pos.x + player->body.debug.x,
-		player->pos.y + player->body.debug.y
-		}, RED);
+	DrawLineV(player->pos,
+		  (Vector2){ player->pos.x + player->body.debug.x,
+			     player->pos.y + player->body.debug.y },
+		  RED);
 }
 
 void render_feed_leveldata(const struct leveldata *data)

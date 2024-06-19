@@ -100,6 +100,11 @@ static char lex_advance(struct lexer *lex)
 	return lex->s[lex->i++];
 }
 
+static char lex_peek(struct lexer *lex, size_t by)
+{
+	return lex->s[lex->i + by - 1];
+}
+
 static size_t get_prec(struct tok tok)
 {
 	switch (tok.op) {
@@ -129,6 +134,15 @@ static struct arraylist lex_expr(struct lexer *lex)
 	for (;;) {
 		const char c = lex_advance(lex);
 
+		if (c == '(') {
+			paren_count++;
+			continue;
+		}
+		if (c == ')') {
+			paren_count--;
+			continue;
+		}
+
 		const enum toktype tt = tt_from_char(c);
 
 		if (search == TT_DEFAULT) {
@@ -136,7 +150,29 @@ static struct arraylist lex_expr(struct lexer *lex)
 			buffer[bi++] = c;
 		}
 
-		break;
+		const char next = lex_peek(lex, 1);
+		const enum toktype next_tt = tt_from_char(next);
+
+		if (next_tt != search) {
+			if (search != TT_UNKNOWN) {
+				struct tok tok = tok_from_buf(buffer, search);
+
+				if (search == TT_OP) {
+					tok.prec = get_prec(tok) +
+						   PR_PAREN * paren_count;
+				}
+
+				arraylist_pushback(&toks, &tok);
+			}
+
+			search = TT_DEFAULT;
+			memset(buffer, 0, bi);
+			bi = 0;
+		} else
+			buffer[bi++] = c;
+
+		if (next == 0)
+			break;
 	}
 
 	free(buffer);
@@ -192,9 +228,6 @@ static struct node *parse_primary(struct parser *par, enum prec min_prec)
 {
 	struct tok tok = parser_advance(par);
 
-	if (tok.op == '(')
-		return parse_expr(par, min_prec + PR_PAREN);
-
 	if (parser_peek(par, 1).type != TT_X)
 		return newnode(tok);
 
@@ -212,11 +245,6 @@ struct node *parse_expr(struct parser *par, enum prec min_prec)
 	struct tok tok_next;
 	for (; par->i < tok_count;) {
 		tok_next = parser_peek(par, 1);
-
-		if (tok_next.op == ')') {
-			parser_advance(par);
-			break;
-		}
 
 		struct tok op_tok = tok_next;
 		enum prec op_prec = op_tok.prec;
@@ -332,16 +360,34 @@ void build_fgraph(const char *expr)
 
 	printf("expr:\"%s\" with x:%f -> y:%f\n", expr, x, y);
 
-	for (;;)
-		;
-
 	if (game.graph_points.data != NULL)
 		arraylist_destroy(&game.graph_points);
 
 	game.graph_points = gen_gpoints(ast);
 }
 
-void render_fgraph(float (*f)(float x), Color color)
+static void draw_line(Vector2 a, Vector2 b, Color c)
+{
+	a.y = -a.y;
+	b.y = -b.y;
+	DrawLineV(a, b, c);
+}
+
+void render_graph(void)
+{
+	struct arraylist *points = &game.graph_points;
+
+	Vector2 *prev = arraylist_get(points, 0);
+
+	for (size_t i = 1; i < arraylist_count(points); ++i) {
+		const Vector2 *p = arraylist_get(points, i);
+		draw_line(*prev, *p, RED);
+
+		*prev = *p;
+	}
+}
+
+static void render_fgraph_old(float (*f)(float x), Color color)
 {
 	const float bl = scr_border_left();
 	const float br = scr_border_right();
