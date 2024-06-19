@@ -1,5 +1,6 @@
 #include "game.h"
 #include "engine/tex.h"
+#include "level.h"
 #include "player.h"
 #include "gameconfig.h"
 #include "graph.h"
@@ -138,6 +139,13 @@ static void lerp_camera_zoom(float dt)
 	game.camera.zoom = Lerp(zoom.from, zoom.to, zoom.lerp);
 }
 
+static void check_for_lose(void)
+{
+	if (game.player->pos.y>0) {
+		reload_level();
+	}
+}
+
 static void redraw_game(void)
 {
 	render();
@@ -166,6 +174,7 @@ void fixed_update(float fdt)
 void update(void)
 {
 	level_control();
+	check_for_lose();
 	handle_input();
 	update_stat_counters();
 }

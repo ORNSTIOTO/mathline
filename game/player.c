@@ -16,7 +16,10 @@ static _Bool player_contained(Vector2 p, float *distance)
 {
 	//printf("p { %f, %f }\n", p.x, p.y);
 	const Vector2 v = { player.pos.x - p.x, player.pos.y - p.y };
-	*distance = Vector2Length(v);
+	if (distance != NULL) {
+		*distance = Vector2Length(v);
+	}
+	
 	return Vector2Length(v) <= player.radius;
 }
 
@@ -64,7 +67,7 @@ _Bool player_collides(Vector2 *point)
 
 _Bool player_collides_with(Vector2 p)
 {
-	return player_contained(p);
+	return player_contained(p, NULL);
 }
 
 void player_init(void)
@@ -81,6 +84,12 @@ void player_init(void)
 	player.body.mass = 1;
 	player.body.moment_of_inertia = calculate_circle_inertia(player.radius);
 	
+}
+
+void reset_player(void) {
+	player.body.linear_velocity = Vector2Zero();
+	player.body.angular_velocity = 0;
+	player.body.linear_accel = Vector2Zero();
 }
 
 void player_move(Vector2 to)

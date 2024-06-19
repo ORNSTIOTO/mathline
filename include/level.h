@@ -16,6 +16,7 @@ struct leveldata {
 };
 
 void load_level(struct leveldata data);
+void reload_level(void);
 void level_control(void);
 _Bool level_star_collected(void);
 

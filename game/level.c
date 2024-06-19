@@ -25,9 +25,15 @@ void load_level(struct leveldata ldata)
 
 	star_collected = 0;
 
+	reset_player();
 	physics_pause();
 	render_feed_leveldata(&data);
 	player_move(data.a);
+}
+
+void reload_level(void)
+{
+	load_level(data);
 }
 
 void level_control(void)
