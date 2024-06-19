@@ -14,6 +14,7 @@ struct game {
 	graph_t *graphs;
 	int ngraphs;
 	Texture2D background;
+	char *tip;
 
 	struct arraylist graph_points;
 };

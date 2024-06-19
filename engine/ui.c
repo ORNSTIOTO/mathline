@@ -1134,28 +1134,28 @@ void ui_init(void)
 	const float stat_font_size = 20;
 
 	struct ui_object *fps = ui_create(UIC_LABEL, "fps", root).object;
-	fps->data->position.offset = (Vector2){ 10, 70 };
+	fps->data->position.offset = (Vector2){ 10, 110 };
 	fps->data->size = (UDim2){ { 0, 20 }, { 1, 0 } };
 	fps->data->transparency = 1;
 	fps->data->label.text.color = stat_color;
 	ui_set_fonttype(fps, UIF_DEBUG, stat_font_size);
 
 	struct ui_object *zoom = ui_create(UIC_LABEL, "zoom", root).object;
-	zoom->data->position.offset = (Vector2){ 10, 90 };
+	zoom->data->position.offset = (Vector2){ 10, 130 };
 	zoom->data->size = (UDim2){ { 0, 20 }, { 1, 0 } };
 	zoom->data->transparency = 1;
 	zoom->data->label.text.color = stat_color;
 	ui_set_fonttype(zoom, UIF_DEBUG, stat_font_size);
 
 	struct ui_object *target = ui_create(UIC_LABEL, "target", root).object;
-	target->data->position.offset = (Vector2){ 10, 110 };
+	target->data->position.offset = (Vector2){ 10, 150 };
 	target->data->size = (UDim2){ { 0, 20 }, { 1, 0 } };
 	target->data->transparency = 1;
 	target->data->label.text.color = stat_color;
 	ui_set_fonttype(target, UIF_DEBUG, stat_font_size);
 
 	struct ui_object *veloc = ui_create(UIC_LABEL, "veloc", root).object;
-	veloc->data->position.offset = (Vector2){ 10, 130 };
+	veloc->data->position.offset = (Vector2){ 10, 170 };
 	veloc->data->size = (UDim2){ { 0, 20 }, { 1, 0 } };
 	veloc->data->transparency = 1;
 	veloc->data->label.text.color = stat_color;
@@ -1176,7 +1176,7 @@ void ui_init(void)
 	// struct ui_object *testimg = ui_create(UIC_IMAGE, "dumimg", root).object;
 	// testimg->data->position = (UDim2){ { 0,0 }, { 0,0 } };
 	// testimg->data->size = (UDim2){ { 0,0 }, { 1,1 } };
-	// ui_set_image(testimg, "res/img/ui/background_lvl.png");
+ 	// ui_set_image(testimg, "res/img/ui/background_lvl.png");
 
 	struct ui_object *title = ui_create(UIC_LABEL, "title", root).object;
 	title->data->position.offset = (Vector2){ 0, 0 };
@@ -1188,7 +1188,18 @@ void ui_init(void)
 	ui_set_text(title, "FUNctions");
 	ui_set_fonttype(title, UIF_CRAYON, 120);
 
-	//#pragma region lvl_ui
+	struct ui_object *tips = ui_create(UIC_LABEL, "tips", root).object;
+	tips->data->position = (UDim2){ { 0, 15 }, { 1, 0 } };
+	tips->data->size = (UDim2){ { 240, 260 }, { 0, 0 } };
+	tips->data->anchor = (Vector2){ 1, 0 };
+	tips->data->transparency = 1;
+	tips->data->label.text.color = WHITE;
+	tips->data->label.text.autowrap = 1;
+	tips->data->label.text.overflow = 1;
+	ui_set_text(tips, game.tip);
+	ui_set_fonttype(tips, UIF_CRAYON, 30);
+
+	/*//#pragma region lvl_ui
 	struct ui_object *lvl1 = ui_create(UIC_BUTTON, "lvl1", root).object;
 	lvl1->data->position = (UDim2){ { 0,-55 }, { .2f,.5f } };
 	lvl1->data->size = (UDim2){ { 101,110 }, { 0,0 } };
@@ -1209,7 +1220,7 @@ void ui_init(void)
 	lvl1_stars->data->size = (UDim2){ { 201/2,105/2 }, { 0,0 } };
 	ui_set_image(lvl1_stars, "res/img/ui/stars0.png");
 
-	//#pragma endregion
+	//#pragma endregion*/
 
 	// struct event *e_c = &button->data->button.btn.events.clicked;
 	// struct event *e_d = &button->data->button.btn.events.lmb_down;
@@ -1219,18 +1230,18 @@ void ui_init(void)
 	// evt_connect(e_d, testbtn_event_function_d);
 	// evt_connect(e_u, testbtn_event_function_u);
 
-	struct ui_object *textbox = ui_create(UIC_TEXTBOX, "box", root).object;
-	textbox->data->position.offset = (Vector2){ 500, 500 };
-	textbox->data->textbox.text.autowrap = 1;
-	textbox->data->textbox.text.overflow = 1;
-	ui_init_text(textbox);
-	ui_set_fonttype(textbox, UIF_DEBUG, stat_font_size);
+	// struct ui_object *textbox = ui_create(UIC_TEXTBOX, "box", root).object;
+	// textbox->data->position.offset = (Vector2){ 500, 500 };
+	// textbox->data->textbox.text.autowrap = 1;
+	// textbox->data->textbox.text.overflow = 1;
+	// ui_init_text(textbox);
+	// ui_set_fonttype(textbox, UIF_DEBUG, stat_font_size);
 
-	struct event *e_fd = &textbox->data->textbox.box.events.focused;
-	struct event *e_fl = &textbox->data->textbox.box.events.focuslost;
+	// struct event *e_fd = &textbox->data->textbox.box.events.focused;
+	// struct event *e_fl = &textbox->data->textbox.box.events.focuslost;
 
-	evt_connect(e_fd, testbox_event_function_fd);
-	evt_connect(e_fl, testbox_event_function_fl);
+	// evt_connect(e_fd, testbox_event_function_fd);
+	// evt_connect(e_fl, testbox_event_function_fl);
 }
 
 void update_stat_counters(void)
@@ -1242,7 +1253,8 @@ void update_stat_counters(void)
 	struct ui_object *zoom = ui_get("zoom");
 	struct ui_object *target = ui_get("target");
 	struct ui_object *veloc = ui_get("veloc");
-
+	struct ui_object *tips = ui_get("tips");
+	
 	ui_set_ftext(fps, "fps: %d", GetFPS());
 	//ui_set_ftext(zoom, "zoom: %.08f", game.camera.zoom);
 	ui_set_ftext(zoom, "on ground: %i", game.player->body.on_ground);
@@ -1251,4 +1263,5 @@ void update_stat_counters(void)
 	ui_set_ftext(veloc, "velocity: { %.02f, %.02f }",
 		     game.player->body.linear_velocity.x,
 		     game.player->body.linear_velocity.y);
+	ui_set_text(tips, game.tip);
 }

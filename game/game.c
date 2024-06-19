@@ -13,6 +13,7 @@
 #include <raymath.h>
 #include <string.h>
 #include <stdio.h>
+#include <malloc.h>
 
 #define DEBUG_KEYS 1
 
@@ -39,6 +40,8 @@ static void background_init(void)
 void game_init(struct window *window)
 {
 	game.window = window;
+	game.tip = malloc(32);
+	strcpy(game.tip, "press P to unpause");
 
 	setup_camera();
 	physics_init();
@@ -46,7 +49,7 @@ void game_init(struct window *window)
 	player_init();
 	ui_init();
 	background_init();
-
+	
 	//build_fgraph("((4x - 1) * 5 + 3 - 8 / (x + 3)) / 2");
 
 	physics_pause();
@@ -141,7 +144,8 @@ static void lerp_camera_zoom(float dt)
 
 static void check_for_lose(void)
 {
-	if (game.player->pos.y>0) {
+	if (game.player->pos.y>700) {
+		strcpy(game.tip, "      reloaded level");
 		reload_level();
 	}
 }
