@@ -50,8 +50,8 @@ void arraylist_remove(struct arraylist *list, size_t idx);
 void arraylist_overwrite(struct arraylist *list, size_t idx, const void *entry);
 void arraylist_trim(struct arraylist *list);
 
-void *arraylist_get(struct arraylist *list, size_t idx);
-size_t arraylist_count(struct arraylist *list);
+void *arraylist_get(const struct arraylist *list, size_t idx);
+size_t arraylist_count(const struct arraylist *list);
 
 size_t arraylist_id_locate(struct arraylist *list, unsigned id);
 

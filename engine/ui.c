@@ -1127,22 +1127,6 @@ void ui_init(void)
 
 	struct ui_object *root = ui_get_root();
 
-	struct ui_object *rrect = ui_create(UIC_FRAME, "red", root).object;
-	rrect->data->anchor = (Vector2){ 1.0F, 0 };
-	rrect->data->position = (UDim2){ { -1.0F, 0 }, { 1, 0 } };
-	rrect->data->size = (UDim2){ { 230, 0 }, { 0, 1 } };
-	rrect->data->color = RED;
-
-	struct ui_object *grect = ui_create(UIC_FRAME, "green", rrect).object;
-	grect->data->position.offset = (Vector2){ 140, 320 };
-	grect->data->size.offset = (Vector2){ 280, 190 };
-	grect->data->color = GREEN;
-
-	struct ui_object *brect = ui_create(UIC_FRAME, "blue", root).object;
-	brect->data->position.offset = (Vector2){ 80, 250 };
-	brect->data->size.offset = (Vector2){ 140, 240 };
-	brect->data->color = BLUE;
-
 	const char *fontname = "res/fnt/dkcrayon-reg.otf";
 	const size_t fontsize = 20;
 

@@ -62,6 +62,11 @@ _Bool player_collides(Vector2 *point)
 	return 0;
 }
 
+_Bool player_collides_with(Vector2 p)
+{
+	return player_contained(p);
+}
+
 void player_init(void)
 {
 	game.player = &player;
@@ -76,4 +81,9 @@ void player_init(void)
 	player.body.mass = 1;
 	player.body.moment_of_inertia = calculate_circle_inertia(player.radius);
 	
+}
+
+void player_move(Vector2 to)
+{
+	player.pos = to;
 }

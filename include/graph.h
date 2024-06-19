@@ -6,6 +6,6 @@
 #define GRAPH_SCALE 30
 
 void render_fgraph(float (*f)(float x), Color color);
-void build_fgraph(float (*f)(float x));
+void build_fgraph(const char *expr);
 
 #endif

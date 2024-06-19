@@ -218,12 +218,12 @@ void arraylist_trim(struct arraylist *list)
 	shrink_by(list, get_unused(list));
 }
 
-void *arraylist_get(struct arraylist *list, size_t idx)
+void *arraylist_get(const struct arraylist *list, size_t idx)
 {
 	return list->data + idx * list->esize;
 }
 
-size_t arraylist_count(struct arraylist *list)
+size_t arraylist_count(const struct arraylist *list)
 {
 	return list->nmemb;
 }
