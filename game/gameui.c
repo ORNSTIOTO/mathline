@@ -179,7 +179,12 @@ static void load_mainmenu(void)
 
 		struct ui_object *txt = ui_create(UIC_LABEL, tname, btn).object;
 		txt->data->transparency = 1;
-		txt->data->position.offset = (Vector2){ 35, 14 };
+		if (i+1>9){
+			txt->data->position.offset = (Vector2){ 21, 14 };
+		}
+		else{
+			txt->data->position.offset = (Vector2){ 34, 14 };
+		}
 		txt->data->label.text.color = WHITE;
 		ui_set_fonttype(txt, UIF_CRAYON, 80);
 		ui_set_text(txt, text);
