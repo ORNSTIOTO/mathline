@@ -2,9 +2,11 @@
 #include "level.h"
 #include "graph.h"
 #include "engine/ui.h"
+#include "perfgoals.h"
 #include <stdio.h>
 #include <stdlib.h>
 
+struct ui_object *screenmenu;
 struct ui_object *mainmenu;
 struct ui_object *levelui;
 
@@ -38,11 +40,67 @@ static void callback_formula_refresh(void *a)
 
 static void callback_lvback(void *a)
 {
-	if (!levelui->data->visible)
-		return;
+	// if (!levelui->data->visible)
+	// 	return;
 
 	level_finish();
 	show_mainmenu();
+}
+
+static void callback_mm_back_button(void *a)
+{
+	if (!mainmenu->data->visible)
+		return;
+
+	show_screenmenu();
+}
+
+static void load_screenmenu(void)
+{
+	struct ui_object *screenbckg =
+		ui_create(UIC_IMAGE, "screenbckg", ui_get_root()).object;
+	screenbckg->data->size = (UDim2){ { 0, 0 }, { 1, 1 } };
+	ui_set_image(screenbckg, "res/img/ui/thumbnail.png");
+
+	struct ui_object *main_side =
+		ui_create(UIC_IMAGE, "main_side", screenbckg).object;
+	
+	main_side->data->size = (UDim2){ { 0.6407407407F * SCREEN_H, 0 }, { 0, 1 } };
+	main_side->data->position = (UDim2){ { SCREEN_W-487, 0 }, { 0, 0 } };
+	ui_set_image(main_side, "res/img/ui/main_side.png");
+
+	struct ui_object *sm_lvls =
+		ui_create(UIC_IMAGEBUTTON, "sm_lvls", screenbckg).object;
+	sm_lvls->data->imagebutton.img.tint = WHITE;
+	sm_lvls->data->anchor = (Vector2){ 0, 1 };
+	sm_lvls->data->position = (UDim2){ { -440, 300 }, { 1, 0 } };
+	sm_lvls->data->size = (UDim2){ { 400, 400*0.3016877637F }, { 0, 0 } };
+	ui_set_image(sm_lvls, "res/img/ui/mm_levels.png");
+	evt_connect(&sm_lvls->data->imagebutton.btn.events.clicked,
+		    callback_lvback);
+
+	struct ui_object *sm_skins =
+		ui_create(UIC_IMAGEBUTTON, "sm_skins", screenbckg).object;
+	sm_skins->data->imagebutton.img.tint = WHITE;
+	sm_skins->data->anchor = (Vector2){ 0, 1 };
+	sm_skins->data->position = (UDim2){ { -440, 480 }, { 1, 0 } };
+	sm_skins->data->size = (UDim2){ { 400, 400*0.3016877637F }, { 0, 0 } };
+	ui_set_image(sm_skins, "res/img/ui/mm_continue.png"); // TODO should be "skins"
+	// evt_connect(&sm_skins->data->imagebutton.btn.events.clicked,
+	// 	    callback_mm_back_button);
+
+	struct ui_object *sm_exit =
+		ui_create(UIC_IMAGEBUTTON, "sm_exit", screenbckg).object;
+	sm_exit->data->imagebutton.img.tint = WHITE;
+	sm_exit->data->anchor = (Vector2){ 0, 1 };
+	sm_exit->data->position = (UDim2){ { -440, 660 }, { 1, 0 } };
+	sm_exit->data->size = (UDim2){ { 400, 400*0.3016877637F }, { 0, 0 } };
+	ui_set_image(sm_exit, "res/img/ui/mm_exit.png"); // TODO should be "skins"
+	// evt_connect(&sm_exit->data->imagebutton.btn.events.clicked,
+	// 	    callback_mm_back_button);
+	
+
+	screenmenu = screenbckg;
 }
 
 static void load_mainmenu(void)
@@ -86,6 +144,16 @@ static void load_mainmenu(void)
 		ui_set_text(txt, text);
 	}
 
+	struct ui_object *mm_back_button =
+		ui_create(UIC_IMAGEBUTTON, "lvmm_back_button", bckg).object;
+	mm_back_button->data->imagebutton.img.tint = WHITE;
+	mm_back_button->data->anchor = (Vector2){ 0, 1 };
+	mm_back_button->data->position = (UDim2){ { 20, -20 }, { 0, 1 } };
+	mm_back_button->data->size = (UDim2){ { 70, 60 }, { 0, 0 } };
+	ui_set_image(mm_back_button, "res/img/ui/back.png");
+	evt_connect(&mm_back_button->data->imagebutton.btn.events.clicked,
+		    callback_mm_back_button);
+
 	mainmenu = bckg;
 }
 
@@ -128,7 +196,7 @@ static void load_levelui(void)
 	back->data->anchor = (Vector2){ 0, 1 };
 	back->data->position = (UDim2){ { 20, -20 }, { 0, 1 } };
 	back->data->size = (UDim2){ { 70, 60 }, { 0, 0 } };
-	ui_set_image(back, "res/img/ui/back.png");
+	ui_set_image(back, "res/img/ui/back.png");	
 	evt_connect(&back->data->imagebutton.btn.events.clicked,
 		    callback_lvback);
 
@@ -235,18 +303,28 @@ static void load_levelui(void)
 
 void load_gameui(void)
 {
+	load_screenmenu();
 	load_mainmenu();
 	load_levelui();
 }
 
 void show_mainmenu(void)
 {
+	screenmenu->data->visible = 0;
 	mainmenu->data->visible = 1;
 	levelui->data->visible = 0;
 }
 
 void show_levelui(void)
 {
+	screenmenu->data->visible = 0;
 	mainmenu->data->visible = 0;
 	levelui->data->visible = 1;
+}
+
+void show_screenmenu(void)
+{
+	screenmenu->data->visible = 1;
+	mainmenu->data->visible = 0;
+	levelui->data->visible = 0;
 }

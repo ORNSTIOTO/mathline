@@ -5,5 +5,6 @@ void load_gameui(void);
 
 void show_mainmenu(void);
 void show_levelui(void);
+void show_screenmenu(void);
 
 #endif
