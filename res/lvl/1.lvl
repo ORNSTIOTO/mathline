@@ -2,4 +2,3 @@ func: 0
 a:0,-150
 b:0,100
 star:0,-50
-solution:anything higher than -150 or lower than 100
