@@ -57,8 +57,8 @@ void game_init(struct window *window)
 
 	build_fgraph("2 + -x");
 
-	for (;;)
-		;
+	//for (;;)
+	//	;
 
 	load_gameui();
 	show_mainmenu();
