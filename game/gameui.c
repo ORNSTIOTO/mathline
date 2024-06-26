@@ -103,7 +103,7 @@ void highlight_skin_sel_button(void)
 	if (skin_btn_selected == NULL)
 		return;
 
-	const uint8_t r = (uint8_t)(sin(GetTime()) * 128) + 128;
+	const uint8_t r = (uint8_t)(sin(GetTime()) * 64) + 128;
 	const Color tint = { r, r, r, 255 };
 	skin_btn_selected->data->imagebutton.img.tint = tint;
 }
