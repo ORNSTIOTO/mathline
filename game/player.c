@@ -1,9 +1,11 @@
 #include "player.h"
+#include "engine/arraylist.h"
 #include "game.h"
 #include "graph.h"
 #include "engine/tex.h"
 
 #include "engine/physics.h"
+#include "level.h"
 #include <raymath.h>
 #include <stdio.h>
 #include <string.h>
@@ -14,6 +16,7 @@ static struct player player = { 0 };
 
 static _Bool player_contained(Vector2 p, float *distance)
 {
+	
 	//printf("p { %f, %f }\n", p.x, p.y);
 	const Vector2 v = { player.pos.x - p.x, player.pos.y - p.y };
 	if (distance != NULL) {
@@ -45,6 +48,7 @@ static _Bool player_collides_with_graph(Vector2 *point)
 			continue;
 
 		if (player_contained(*p, &dist)) {
+			
 			if (dist < old_dist) {
 				old_dist = dist;
 				point->x = p->x;
@@ -60,9 +64,28 @@ static _Bool player_collides_with_graph(Vector2 *point)
 	return 0;
 }
 
+static _Bool player_collides_with_obstacle(struct obstacle ob)
+{
+	if (Vector2Distance(player.pos, ob.pos) < player.radius *2)
+		return 1;
+	return 0;
+}
+
 _Bool player_collides(Vector2 *point)
 {
 	return player_collides_with_graph(point);
+
+	/*
+	// check direct collisions against all graphs
+	for (int i = 0; i < game.ngraphs; ++i) {
+		if (player_collides_with_graph(game.graphs[i], point)) return 1;
+	}
+	for (size_t i = 0; i < arraylist_count(&game.leveldata->obstacles); ++i) {
+		struct obstacle *ob = arraylist_get(&game.leveldata->obstacles, i);
+		if (player_collides_with_obstacle(*ob)) return 1;
+	}
+	return 0;
+	*/
 }
 
 _Bool player_collides_with(Vector2 p)
