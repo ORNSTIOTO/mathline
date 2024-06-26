@@ -257,7 +257,7 @@ static void load_levelui(void)
 
 		struct ui_object *right_bracket_l = ui_create(UIC_LABEL, "right_bracket_l", right_bracket).object;
 		right_bracket_l->data->transparency = 1;
-		right_bracket_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		right_bracket_l->data->position = (UDim2){ { 23, 5 }, { 0, 0 } };
 		right_bracket_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
 		right_bracket_l->data->label.text.color = WHITE;
 		ui_set_text(right_bracket_l, ")");
@@ -273,7 +273,7 @@ static void load_levelui(void)
 
 		struct ui_object *left_bracket_l = ui_create(UIC_LABEL, "left_bracket_l", left_bracket).object;
 		left_bracket_l->data->transparency = 1;
-		left_bracket_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		left_bracket_l->data->position = (UDim2){ { 23, 5 }, { 0, 0 } };
 		left_bracket_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
 		left_bracket_l->data->label.text.color = WHITE;
 		ui_set_text(left_bracket_l, "(");
@@ -305,7 +305,7 @@ static void load_levelui(void)
 
 		struct ui_object *divide_l_fnsdjfn = ui_create(UIC_LABEL, "divide_l", divide).object;
 		divide_l_fnsdjfn->data->transparency = 1;
-		divide_l_fnsdjfn->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		divide_l_fnsdjfn->data->position = (UDim2){ { 23, 5 }, { 0, 0 } };
 		divide_l_fnsdjfn->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
 		divide_l_fnsdjfn->data->label.text.color = WHITE;
 		ui_set_text(divide_l_fnsdjfn, "/");
@@ -321,7 +321,7 @@ static void load_levelui(void)
 
 		struct ui_object *multiplicate_l = ui_create(UIC_LABEL, "multiplicate_l", multiplicate).object;
 		multiplicate_l->data->transparency = 1;
-		multiplicate_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		multiplicate_l->data->position = (UDim2){ { 21, 3 }, { 0, 0 } };
 		multiplicate_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
 		multiplicate_l->data->label.text.color = WHITE;
 		ui_set_text(multiplicate_l, "*");
@@ -337,7 +337,7 @@ static void load_levelui(void)
 
 		struct ui_object *substract_l = ui_create(UIC_LABEL, "substract_l", substract).object;
 		substract_l->data->transparency = 1;
-		substract_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		substract_l->data->position = (UDim2){ { 21, 3 }, { 0, 0 } };
 		substract_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
 		substract_l->data->label.text.color = WHITE;
 		ui_set_text(substract_l, "-");
@@ -353,7 +353,7 @@ static void load_levelui(void)
 
 		struct ui_object *add_l = ui_create(UIC_LABEL, "add_l", add).object;
 		add_l->data->transparency = 1;
-		add_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		add_l->data->position = (UDim2){ { 21, 3 }, { 0, 0 } };
 		add_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
 		add_l->data->label.text.color = WHITE;
 		ui_set_text(add_l, "+");
@@ -369,7 +369,7 @@ static void load_levelui(void)
 
 		struct ui_object *x_l = ui_create(UIC_LABEL, "x_l", x).object;
 		x_l->data->transparency = 1;
-		x_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		x_l->data->position = (UDim2){ { 21, 3 }, { 0, 0 } };
 		x_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
 		x_l->data->label.text.color = WHITE;
 		ui_set_text(x_l, "x");
@@ -385,7 +385,7 @@ static void load_levelui(void)
 
 		struct ui_object *sin_l = ui_create(UIC_LABEL, "sin_l", sin).object;
 		sin_l->data->transparency = 1;
-		sin_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		sin_l->data->position = (UDim2){ { 21, 3 }, { 0, 0 } };
 		sin_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
 		sin_l->data->label.text.color = WHITE;
 		ui_set_text(sin_l, "sin");
@@ -401,7 +401,7 @@ static void load_levelui(void)
 	
 		struct ui_object *abs_l = ui_create(UIC_LABEL, "abs_l", abs).object;
 		abs_l->data->transparency = 1;
-		abs_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		abs_l->data->position = (UDim2){ { 18, 3 }, { 0, 0 } };
 		abs_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
 		abs_l->data->label.text.color = WHITE;
 		ui_set_text(abs_l, "abs");
