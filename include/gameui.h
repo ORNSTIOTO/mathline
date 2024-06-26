@@ -6,5 +6,8 @@ void load_gameui(void);
 void show_mainmenu(void);
 void show_levelui(void);
 void show_screenmenu(void);
+void show_skinsui(void);
+
+void highlight_skin_sel_button(void);
 
 #endif
