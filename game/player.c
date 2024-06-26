@@ -68,10 +68,10 @@ static _Bool player_collides_with_graph(Vector2 *point)
 	return 0;
 }
 
-static _Bool player_collides_with_obstacle(struct obstacle ob)
+static _Bool player_collides_with_obstacle(struct obstacle ob, Vector2 *point)
 {
 	if (Vector2Distance(player.pos, ob.pos) < player.radius *2) {
-		physics_pause();
+		*point = Vector2Subtract(ob.pos, Vector2Scale(Vector2Subtract(ob.pos, player.pos), 0.5F));
 		return 1;}
 	return 0;
 }
@@ -88,7 +88,7 @@ _Bool player_collides(Vector2 *point)
 	}*/
 	for (size_t i = 0; i < arraylist_count(&game.level.obstacles); ++i) {
 		struct obstacle *ob = arraylist_get(&game.level.obstacles, i);
-		if (player_collides_with_obstacle(*ob)) return 1;
+		if (player_collides_with_obstacle(*ob, point)) return 1;
 	}
 	return 0;
 	
