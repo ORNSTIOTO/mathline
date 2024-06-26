@@ -16,7 +16,6 @@ static struct player player = { 0 };
 
 static _Bool player_contained(Vector2 p, float *distance)
 {
-	
 	//printf("p { %f, %f }\n", p.x, p.y);
 	const Vector2 v = { player.pos.x - p.x, player.pos.y - p.y };
 	if (distance != NULL) {
@@ -52,7 +51,6 @@ static _Bool player_collides_with_graph(Vector2 *point)
 		e.y *= -1;
 
 		if (player_contained(e, &dist)) {
-			
 			if (dist < old_dist) {
 				old_dist = dist;
 				point->x = e.x;
@@ -70,16 +68,20 @@ static _Bool player_collides_with_graph(Vector2 *point)
 
 static _Bool player_collides_with_obstacle(struct obstacle ob, Vector2 *point)
 {
-	if (Vector2Distance(player.pos, ob.pos) < player.radius *2) {
-		*point = Vector2Subtract(ob.pos, Vector2Scale(Vector2Subtract(ob.pos, player.pos), 0.5F));
-		return 1;}
+	if (Vector2Distance(player.pos, ob.pos) < player.radius * 2) {
+		*point = Vector2Subtract(
+			ob.pos,
+			Vector2Scale(Vector2Subtract(ob.pos, player.pos),
+				     0.5F));
+		return 1;
+	}
 	return 0;
 }
 
 _Bool player_collides(Vector2 *point)
 {
-
-	if (player_collides_with_graph(point)) return 1;
+	if (player_collides_with_graph(point))
+		return 1;
 
 	/*
 	// check direct collisions against all graphs
@@ -88,10 +90,10 @@ _Bool player_collides(Vector2 *point)
 	}*/
 	for (size_t i = 0; i < arraylist_count(&game.level.obstacles); ++i) {
 		struct obstacle *ob = arraylist_get(&game.level.obstacles, i);
-		if (player_collides_with_obstacle(*ob, point)) return 1;
+		if (player_collides_with_obstacle(*ob, point))
+			return 1;
 	}
 	return 0;
-	
 }
 
 _Bool player_collides_with(Vector2 p)
@@ -108,8 +110,6 @@ void player_init(void)
 	player.tex_size = 24.0F;
 	player.tint = (Color){ 255, 255, 255, 255 };
 
-	texture_load(&player.tex, "res/img/ball/puffer.png");
-
 	player.body.mass = 1;
 	player.body.moment_of_inertia = calculate_circle_inertia(player.radius);
 }
@@ -120,6 +120,12 @@ void reset_player(void)
 	player.body.linear_velocity = Vector2Zero();
 	player.body.angular_velocity = 0;
 	player.body.linear_accel = Vector2Zero();
+}
+
+void player_set_skin(const char *filename)
+{
+	UnloadTexture(player.tex);
+	texture_load(&player.tex, filename);
 }
 
 void player_move(Vector2 to)

@@ -14,6 +14,7 @@
 #include <raymath.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <malloc.h>
 
 #define DEBUG_KEYS 0
@@ -170,6 +171,7 @@ void fixed_update(float fdt)
 
 void update(void)
 {
+	highlight_skin_sel_button();
 	level_control();
 	check_for_lose();
 	handle_input();

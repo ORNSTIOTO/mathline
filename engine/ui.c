@@ -860,7 +860,7 @@ static _Bool ui_visible(const struct ui_object *obj)
 		if (!ins.data->visible) {
 			return 0;
 		}
-		if (ins.parent==NULL) {
+		if (ins.parent == NULL) {
 			return 1;
 		}
 		ins = *ins.parent;
@@ -879,10 +879,11 @@ static struct ui_object *ui_find_hovered_button(void)
 	for (size_t i = 0; i < click_area.nmemb; ++i) {
 		struct ui_object *button = click_area.buttons[i];
 		const struct ui_descriptor *data = button->data;
-		if (contained_within(mp, data->_abs_position, data->_abs_size) &&
-		     ui_visible(button)) {
+		if (contained_within(mp, data->_abs_position,
+				     data->_abs_size) &&
+		    ui_visible(button)) {
 			return button;
-		    }
+		}
 	}
 
 	return NULL;
@@ -1146,7 +1147,7 @@ void ui_init(void)
 	ui_set_fonttype(title, UIF_CRAYON, 120);
 
 	struct ui_object *tips = ui_create(UIC_LABEL, "tips", root).object;
-	tips->data->position = (UDim2){ { 0-280, 15 }, { 1, 0 } };
+	tips->data->position = (UDim2){ { 0 - 280, 15 }, { 1, 0 } };
 	tips->data->size = (UDim2){ { 240, 260 }, { 0, 0 } };
 	tips->data->anchor = (Vector2){ 1, 0 };
 	tips->data->transparency = 1;
