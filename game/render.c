@@ -20,18 +20,6 @@ static struct {
 Texture2D star_tex;
 Texture2D dest_tex;
 
-static float __f(float x)
-{
-	//return x;
-	//return sinf(powf(x, x)) * x;
-	return sinf(x);
-}
-
-static float __g(float x)
-{
-	return atanf(x);
-}
-
 void render_init(void)
 {
 	rctx.graph_color = RED;
@@ -39,9 +27,6 @@ void render_init(void)
 
 	game.ngraphs = 1;
 	game.graphs = malloc(game.ngraphs * sizeof(graph_t));
-
-	game.graphs[0] = __f;
-	//game.graphs[1] = __g;
 
 	texture_load(&star_tex, "res/img/star.png");
 	texture_load(&dest_tex, "res/img/destination.png");
@@ -82,7 +67,7 @@ void render(void)
 		     (Vector2){ game.window->screen_w / game.camera.zoom,
 				game.window->screen_h / game.camera.zoom },
 		     0, WHITE);
-	render_fgraph_old(__f, RED);
+	render_graph();
 
 	render_obstacles();
 	render_destination();

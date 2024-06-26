@@ -19,32 +19,33 @@ static _Bool player_contained(Vector2 p, float *distance)
 	if (distance != NULL) {
 		*distance = Vector2Length(v);
 	}
-	
+
 	return Vector2Length(v) <= player.radius;
 }
 
-static _Bool player_collides_with_graph(graph_t graph, Vector2 *point)
+static _Bool player_collides_with_graph(Vector2 *point)
 {
 	// TODO fix this mess later
 
 	const int precision = 10;
-	const float px = player.pos.x;
 
 	float old_dist = INFINITY;
 	float dist;
 
-	for (int x = (int)(px - player.radius) * precision;
-	     x <= (int)(px + player.radius) * precision; ++x) {
-		const float y =
-			-graph((float)x / (float)precision / GRAPH_SCALE);
-		const Vector2 p = { (float)x / (float)precision,
-				    y * GRAPH_SCALE };
+	size_t points = 5000;
+	for (size_t i = 0; i < points; ++i) {
+		//	const float x = (float)i - (float)points / 2;
+		//	const float *y = arraylist_get(&game.graph_points, i);
+		//	const Vector2 p = { (float)x / (float)precision,
+		//			    *y * GRAPH_SCALE };
 
-		if (player_contained(p, &dist)) {
+		const Vector2 *p = arraylist_get(&game.graph_points, i);
+
+		if (player_contained(*p, &dist)) {
 			if (dist < old_dist) {
 				old_dist = dist;
-				point->x = p.x;
-				point->y = p.y;
+				point->x = p->x;
+				point->y = p->y;
 			}
 
 			//return 1;
@@ -58,11 +59,7 @@ static _Bool player_collides_with_graph(graph_t graph, Vector2 *point)
 
 _Bool player_collides(Vector2 *point)
 {
-	// check direct collisions against all graphs
-	for (int i = 0; i < game.ngraphs; ++i)
-		if (player_collides_with_graph(game.graphs[i], point))
-			return 1;
-	return 0;
+	return player_collides_with_graph(point);
 }
 
 _Bool player_collides_with(Vector2 p)
@@ -85,7 +82,8 @@ void player_init(void)
 	player.body.moment_of_inertia = calculate_circle_inertia(player.radius);
 }
 
-void reset_player(void) {
+void reset_player(void)
+{
 	player.body.linear_velocity = Vector2Zero();
 	player.body.angular_velocity = 0;
 	player.body.linear_accel = Vector2Zero();

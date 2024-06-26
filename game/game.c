@@ -3,6 +3,7 @@
 #include "level.h"
 #include "player.h"
 #include "gameconfig.h"
+#include "gameui.h"
 #include "graph.h"
 
 #include "engine/render.h"
@@ -15,7 +16,7 @@
 #include <stdio.h>
 #include <malloc.h>
 
-#define DEBUG_KEYS 1
+#define DEBUG_KEYS 0
 
 struct game game = { 0 };
 
@@ -41,7 +42,7 @@ void game_init(struct window *window)
 {
 	game.window = window;
 	game.tip = malloc(32);
-	strcpy(game.tip, "press P to unpause");
+	strcpy(game.tip, "press P to pause\npress R to restart");
 
 	setup_camera();
 	physics_init();
@@ -50,23 +51,23 @@ void game_init(struct window *window)
 	ui_init();
 	background_init();
 
-	//build_fgraph("((4x - 1) * 5 + 3 - 8 / (x + 3)) / 2");
-
-	//build_fgraph("(1/10000)*x*x*x");
-
 	physics_pause();
+
+	load_gameui();
+	show_mainmenu();
 }
 
-static void keyboard_debug(void)
+static void keyboard_debug(int c)
 {
-	const int c = GetCharPressed();
-
 	switch (c) {
 	case 'p':
 		if (physics_is_paused())
 			physics_resume();
 		else
 			physics_pause();
+		break;
+	case 'r':
+		reload_level();
 		break;
 	default:
 		break;
@@ -75,10 +76,10 @@ static void keyboard_debug(void)
 
 static void handle_input(void)
 {
-#if DEBUG_KEYS == 1
-	keyboard_debug();
-#endif
-	ui_resolve_keyboard();
+	const int c = GetCharPressed();
+
+	keyboard_debug(c);
+	ui_resolve_keyboard(c);
 
 	const Vector2 mouse_delta = GetMouseDelta();
 	const float mdx = mouse_delta.x;
@@ -132,7 +133,6 @@ static void lerp_camera_zoom(float dt)
 static void check_for_lose(void)
 {
 	if (game.player->pos.y > 700) {
-		strcpy(game.tip, "      reloaded level");
 		reload_level();
 	}
 }

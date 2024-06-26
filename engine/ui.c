@@ -124,7 +124,13 @@ const struct uie_image image_default_attributes = {
 	.img.tex = { 0 },
 };
 
-static struct ui_object *ui_get_root(void)
+const struct uie_imagebutton imagebutton_default_attributes = {
+	.img.tint = (Color){ 255, 255, 255, 255 },
+	.img.transparency = 0,
+	.img.tex = { 0 },
+};
+
+struct ui_object *ui_get_root(void)
 {
 	return &ui_objects.list[0];
 }
@@ -269,7 +275,7 @@ void ui_set_parent(struct ui_object *obj, struct ui_object *parent)
 	register_child(parent, obj);
 }
 
-static void ui_init_text(struct ui_object *obj)
+void ui_init_text(struct ui_object *obj)
 {
 	struct ui_text *text = &obj->data->label.text;
 	text->string = calloc(TEXT_DEFAULT_CAPACITY, 1);
@@ -432,6 +438,10 @@ static void set_default_class_attributes(struct ui_descriptor *descriptor)
 		size = sizeof image_default_attributes;
 		dest = &descriptor->image;
 		break;
+	case UIC_IMAGEBUTTON:
+		list = &imagebutton_default_attributes;
+		size = sizeof imagebutton_default_attributes;
+		dest = &descriptor->imagebutton;
 	default:
 		return;
 	}
@@ -804,6 +814,9 @@ static void ui_draw_single(const struct ui_descriptor *data)
 	case UIC_TEXTBOX:
 		ui_draw_textbox(data);
 		break;
+	case UIC_IMAGEBUTTON:
+		ui_draw_imagebutton(data);
+		break;
 	default:
 		break;
 	}
@@ -900,8 +913,10 @@ static void handle_lmbdown(struct ui_object *on)
 
 	switch (on->data->class) {
 	case UIC_BUTTON:
-	case UIC_IMAGEBUTTON:
 		button_lmbdown(on, &on->data->button.btn);
+		break;
+	case UIC_IMAGEBUTTON:
+		button_lmbdown(on, &on->data->imagebutton.btn);
 		break;
 	case UIC_TEXTBOX:
 		textbox_lmbdown(on);
@@ -933,8 +948,10 @@ static void handle_lmbup(struct ui_object *on)
 
 	switch (on->data->class) {
 	case UIC_BUTTON:
-	case UIC_IMAGEBUTTON:
 		button_lmbup(on, &on->data->button.btn);
+		break;
+	case UIC_IMAGEBUTTON:
+		button_lmbup(on, &on->data->imagebutton.btn);
 		break;
 	default:
 		break;
@@ -1026,10 +1043,8 @@ static void textbox_backspace(struct ui_object *textbox)
 		text_erase(text, --tbox->box.cursor);
 }
 
-static void process_textbox_input(struct ui_object *textbox)
+static void process_textbox_input(struct ui_object *textbox, int c)
 {
-	const int c = GetCharPressed();
-
 	if (c > 0)
 		textbox_write(textbox, (char)c);
 
@@ -1037,13 +1052,13 @@ static void process_textbox_input(struct ui_object *textbox)
 		textbox_backspace(textbox);
 }
 
-void ui_resolve_keyboard(void)
+void ui_resolve_keyboard(int c)
 {
 	struct ui_object *focused = click_area.focused;
 	if (focused == NULL)
 		return;
 
-	process_textbox_input(focused);
+	process_textbox_input(focused, c);
 }
 
 static void ui_create_root(void)
@@ -1087,36 +1102,6 @@ static void ui_setup_texture_buckets(void)
 					.id.length = tex_id_len });
 }
 
-static void testbtn_event_function_c(void *args)
-{
-	printf("Clicked!\n");
-}
-
-static void testbtn_event_function_d(void *args)
-{
-	printf("Down!\n");
-}
-
-static void testbtn_event_function_u(void *args)
-{
-	printf("Up!\n");
-}
-
-static void testbox_event_function_fd(void *args)
-{
-	printf("Focused!\n");
-}
-
-static void testbox_event_function_fl(void *args)
-{
-	printf("Focus lost!\n");
-}
-
-static void lvl_button_click(void *args)
-{
-	printf("Stars\n");
-}
-
 static void formula_box_refresh(void *a)
 {
 	struct evtbox_args *args = a;
@@ -1132,55 +1117,8 @@ void ui_init(void)
 
 	struct ui_object *root = ui_get_root();
 
-	const char *fontname = "res/fnt/dkcrayon-reg.otf";
-	const size_t fontsize = 20;
-
 	const Color stat_color = RAYWHITE;
 	const float stat_font_size = 20;
-
-	struct ui_object *fps = ui_create(UIC_LABEL, "fps", root).object;
-	fps->data->position.offset = (Vector2){ 10, 110 };
-	fps->data->size = (UDim2){ { 0, 20 }, { 1, 0 } };
-	fps->data->transparency = 1;
-	fps->data->label.text.color = stat_color;
-	ui_set_fonttype(fps, UIF_DEBUG, stat_font_size);
-
-	struct ui_object *zoom = ui_create(UIC_LABEL, "zoom", root).object;
-	zoom->data->position.offset = (Vector2){ 10, 130 };
-	zoom->data->size = (UDim2){ { 0, 20 }, { 1, 0 } };
-	zoom->data->transparency = 1;
-	zoom->data->label.text.color = stat_color;
-	ui_set_fonttype(zoom, UIF_DEBUG, stat_font_size);
-
-	struct ui_object *target = ui_create(UIC_LABEL, "target", root).object;
-	target->data->position.offset = (Vector2){ 10, 150 };
-	target->data->size = (UDim2){ { 0, 20 }, { 1, 0 } };
-	target->data->transparency = 1;
-	target->data->label.text.color = stat_color;
-	ui_set_fonttype(target, UIF_DEBUG, stat_font_size);
-
-	struct ui_object *veloc = ui_create(UIC_LABEL, "veloc", root).object;
-	veloc->data->position.offset = (Vector2){ 10, 170 };
-	veloc->data->size = (UDim2){ { 0, 20 }, { 1, 0 } };
-	veloc->data->transparency = 1;
-	veloc->data->label.text.color = stat_color;
-	ui_set_fonttype(veloc, UIF_DEBUG, stat_font_size);
-
-	// struct ui_object *testimg =
-	// 	ui_create_ext(UIC_IMAGE, "dumimg", root,
-	// 		      (struct ui_descriptor){
-	// 			      .size.offset = (Vector2){ 1,1 },
-	// 			      .position.scale = (Vector2){ 1, 1 },
-	// 			      .anchor = (Vector2){ 1, 1 },
-	// 		      })
-	// 		.object;
-	// testimg->data->size = (UDim2){ { 0, 0 }, { 1, 1 } };
-	// ui_set_image(testimg, "res/img/ui/thumbnail.png");
-
-	// struct ui_object *testimg = ui_create(UIC_IMAGE, "dumimg", root).object;
-	// testimg->data->position = (UDim2){ { 0,0 }, { 0,0 } };
-	// testimg->data->size = (UDim2){ { 0,0 }, { 1,1 } };
-	// ui_set_image(testimg, "res/img/ui/background_lvl.png");
 
 	struct ui_object *title = ui_create(UIC_LABEL, "title", root).object;
 	title->data->position.offset = (Vector2){ 0, 0 };
@@ -1261,22 +1199,4 @@ void ui_init(void)
 
 void update_stat_counters(void)
 {
-	//   NOTE: This is bad for performance; do not do this. Always keep a
-	// reference to an object somewhere outside of the function, for quick
-	// access. I am lazy and this will get rewritten anyway.
-	struct ui_object *fps = ui_get("fps");
-	struct ui_object *zoom = ui_get("zoom");
-	struct ui_object *target = ui_get("target");
-	struct ui_object *veloc = ui_get("veloc");
-	struct ui_object *tips = ui_get("tips");
-
-	ui_set_ftext(fps, "fps: %d", GetFPS());
-	//ui_set_ftext(zoom, "zoom: %.08f", game.camera.zoom);
-	ui_set_ftext(zoom, "on ground: %i", game.player->body.on_ground);
-	ui_set_ftext(target, "target: { %.04f, %.04f }", game.camera.target.x,
-		     game.camera.target.y);
-	ui_set_ftext(veloc, "velocity: { %.02f, %.02f }",
-		     game.player->body.linear_velocity.x,
-		     game.player->body.linear_velocity.y);
-	ui_set_text(tips, game.tip);
 }

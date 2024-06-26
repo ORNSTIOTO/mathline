@@ -26,7 +26,7 @@ static void star_collision(void)
 
 static void dest_collision(void)
 {
-	printf("REACHED DESTINATION!\n");
+	level_finish();
 }
 
 static void load_level(struct leveldata ldata)
@@ -58,6 +58,10 @@ void level_control(void)
 _Bool level_star_collected(void)
 {
 	return star_collected;
+}
+
+void level_finish(void)
+{
 }
 
 struct lpar {

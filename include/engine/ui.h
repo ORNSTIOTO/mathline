@@ -152,6 +152,7 @@ struct ui_descriptor {
 		struct uie_button button;
 		struct uie_textbox textbox;
 		struct uie_image image;
+		struct uie_imagebutton imagebutton;
 	};
 
 	////////////
@@ -197,9 +198,11 @@ struct ui_res {
 	struct ui_object *object;
 };
 
+struct ui_object *ui_get_root(void);
 void ui_set_parent(struct ui_object *obj, struct ui_object *parent);
 void ui_set_text(struct ui_object *obj, const char *s);
 void ui_set_ftext(struct ui_object *obj, const char *f, ...);
+void ui_init_text(struct ui_object *obj);
 void ui_set_font(struct ui_object *obj, const char *fntname, float fntsize);
 void ui_set_fontsize(struct ui_object *obj, float fntsize);
 void ui_set_fonttype(struct ui_object *obj, enum ui_font_type ft,
@@ -218,7 +221,7 @@ int ui_delete(const char *name);
 struct ui_object *ui_get(const char *by_name);
 
 void ui_resolve_mouse(void);
-void ui_resolve_keyboard(void);
+void ui_resolve_keyboard(int c);
 
 void update_stat_counters(void);
 void redraw_ui(void);

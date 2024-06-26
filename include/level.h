@@ -14,10 +14,11 @@ struct leveldata {
 	struct arraylist obstacles;
 };
 
+int load_level_num(int n);
 void reload_level(void);
 void level_control(void);
 _Bool level_star_collected(void);
 
-int load_level_num(int n);
+void level_finish(void);
 
 #endif
