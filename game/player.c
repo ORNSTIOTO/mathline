@@ -36,6 +36,7 @@ static _Bool player_collides_with_graph(Vector2 *point)
 	float dist;
 
 	size_t points = arraylist_count(&game.graph_points);
+	printf("points %i\n", points);
 	for (size_t i = 0; i < points; ++i) {
 		//	const float x = (float)i - (float)points / 2;
 		//	const float *y = arraylist_get(&game.graph_points, i);
@@ -47,12 +48,15 @@ static _Bool player_collides_with_graph(Vector2 *point)
 		if (p == NULL)
 			continue;
 
-		if (player_contained(*p, &dist)) {
+		Vector2 e = *p;
+		e.y *= -1;
+
+		if (player_contained(e, &dist)) {
 			
 			if (dist < old_dist) {
 				old_dist = dist;
-				point->x = p->x;
-				point->y = p->y;
+				point->x = e.x;
+				point->y = e.y;
 			}
 
 			//return 1;
