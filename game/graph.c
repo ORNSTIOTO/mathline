@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 // https://github.com/raysan5/raylib/blob/f05316b11d0a1b17088e3e75e4682e2e7ce54b91/examples/textures/textures_polygon.c#L114
 // DrawTexturePoly() - Could help drawing the graph texture.
@@ -39,6 +40,7 @@ enum prec {
 	PR_DEFAULT,
 	PR_ADDSUB,
 	PR_MULDIV,
+	PR_EXP,
 	PR_PAREN,
 };
 
@@ -48,7 +50,7 @@ struct tok {
 	union {
 		float num;
 		char op;
-		char *fname;
+		char fname[8];
 	};
 };
 
@@ -65,12 +67,13 @@ struct lexer {
 
 static enum toktype tt_from_char(char c)
 {
-	return c >= '0' && c <= '9'			    ? TT_NUM :
-	       c == 'x'					    ? TT_X :
-	       c >= 'a' && c <= 'z'			    ? TT_FUNC :
-	       c == '+' || c == '-' || c == '*' || c == '/' ? TT_OP :
-	       c == '(' || c == ')'			    ? TT_PAREN :
-							      TT_UNKNOWN;
+	return c >= '0' && c <= '9' ? TT_NUM :
+	       c == 'x'		    ? TT_X :
+	       c >= 'a' && c <= 'z' ? TT_FUNC :
+	       c == '+' || c == '-' || c == '*' || c == '/' || c == '^' ?
+				      TT_OP :
+	       c == '(' || c == ')' ? TT_PAREN :
+				      TT_UNKNOWN;
 }
 
 static struct tok tok_from_buf(const char *buf, enum toktype tt)
@@ -115,6 +118,8 @@ static size_t get_prec(struct tok tok)
 	case '*':
 	case '/':
 		return PR_MULDIV;
+	case '^':
+		return PR_EXP;
 	default:
 		return PR_DEFAULT;
 	}
@@ -130,20 +135,10 @@ static struct arraylist lex_expr(struct lexer *lex)
 	char *buffer = calloc(64, 1);
 	size_t bi = 0;
 
-	size_t paren_count = 0;
 	_Bool first = 1;
 
 	for (;;) {
 		const char c = lex_advance(lex);
-
-		if (c == '(') {
-			paren_count++;
-			continue;
-		}
-		if (c == ')') {
-			paren_count--;
-			continue;
-		}
 
 		const enum toktype tt = tt_from_char(c);
 
@@ -161,15 +156,10 @@ static struct arraylist lex_expr(struct lexer *lex)
 		if (!first)
 			buffer[bi++] = c;
 
-		if (next_tt != search) {
+		if (next_tt != search ||
+		    (next_tt != TT_NUM && next_tt != TT_FUNC)) {
 			if (search != TT_UNKNOWN) {
 				struct tok tok = tok_from_buf(buffer, search);
-
-				if (search == TT_OP) {
-					tok.prec = get_prec(tok) +
-						   PR_PAREN * paren_count;
-				}
-
 				arraylist_pushback(&toks, &tok);
 			}
 
@@ -232,12 +222,28 @@ static struct tok parser_peek(struct parser *par, size_t by)
 
 struct node *parse_expr(struct parser *par, enum prec min_prec);
 
-static struct node *parse_primary(struct parser *par, enum prec min_prec)
+static struct node *parse_primary(struct parser *par)
 {
 	struct tok tok = parser_advance(par);
 	struct tok next = parser_peek(par, 1);
 
-	const _Bool negative = tok.type == TT_OP && tok.op == '-' &&
+	if (tok.type == TT_FUNC && next.type == TT_PAREN && next.op == '(') {
+		struct node *f = newnode(tok);
+		parser_advance(par);
+		f->left = parse_expr(par, PR_DEFAULT);
+		parser_advance(par);
+		return f;
+	}
+
+	if (tok.type == TT_PAREN && tok.op == '(') {
+		struct node *node = parse_expr(par, PR_DEFAULT);
+		parser_advance(par);
+		return node;
+	}
+
+	struct tok prev = parser_peek(par, -1);
+	const _Bool negative = prev.type == TT_OP && tok.type == TT_OP &&
+			       tok.op == '-' &&
 			       (next.type == TT_NUM || next.type == TT_X);
 
 	if (negative) {
@@ -260,17 +266,19 @@ static struct node *parse_primary(struct parser *par, enum prec min_prec)
 
 struct node *parse_expr(struct parser *par, enum prec min_prec)
 {
-	struct node *left = parse_primary(par, min_prec);
+	struct node *left = parse_primary(par);
 
 	size_t tok_count = arraylist_count(&par->tokens);
 	struct tok tok_next;
 	for (; par->i < tok_count;) {
 		tok_next = parser_peek(par, 1);
 
-		struct tok op_tok = tok_next;
-		enum prec op_prec = op_tok.prec;
+		if ((tok_next.type == TT_PAREN && tok_next.op == ')'))
+			break;
 
-		printf("op prec: %c %d\n", op_tok.op, op_prec);
+		struct tok op_tok = tok_next;
+		enum prec op_prec = get_prec(op_tok);
+
 		if (op_prec < min_prec)
 			break;
 
@@ -322,6 +330,20 @@ static void view_nodes(struct node *root)
 	printf("\n");
 }
 
+static float calculate_for_x(struct node *node, float x);
+
+static float calc_func(struct node *node, float x)
+{
+	const float v = calculate_for_x(node->left, x);
+
+	if (strcmp(node->tok.fname, "sin") == 0)
+		return sinf(v);
+	if (strcmp(node->tok.fname, "abs") == 0)
+		return fabsf(x);
+
+	return 0;
+}
+
 static float calculate_for_x(struct node *node, float x)
 {
 	const struct tok tok = node->tok;
@@ -339,6 +361,8 @@ static float calculate_for_x(struct node *node, float x)
 			return left * right;
 		if (tok.op == '/')
 			return left / right;
+		if (tok.op == '^')
+			return powf(left, right);
 
 		return 0;
 	}
@@ -346,6 +370,8 @@ static float calculate_for_x(struct node *node, float x)
 		return node->negative ? -node->tok.num : node->tok.num;
 	case TT_X:
 		return node->negative ? -x : x;
+	case TT_FUNC:
+		return calc_func(node, x);
 	default:
 		return 0;
 	}
@@ -371,15 +397,14 @@ static struct arraylist gen_gpoints(struct node *ast)
 void build_fgraph(const char *expr)
 {
 	struct arraylist tokens = lex(expr);
-	view_toklist(&tokens);
+	//view_toklist(&tokens);
 
 	struct node *ast = parse(tokens);
-	view_nodes(ast);
+	//view_nodes(ast);
 
-	const float x = 5;
-	const float y = calculate_for_x(ast, x);
-
-	printf("expr:\"%s\" with x:%f -> y:%f\n", expr, x, y);
+	//const float x = 5;
+	//const float y = calculate_for_x(ast, x);
+	//printf("expr:\"%s\" with x:%f -> y:%f\n", expr, x, y);
 
 	if (game.graph_points.data != NULL)
 		arraylist_destroy(&game.graph_points);

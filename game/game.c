@@ -56,10 +56,7 @@ void game_init(struct window *window)
 
 	physics_pause();
 
-	build_fgraph("2 + -x");
-
-	//for (;;)
-	//	;
+	//build_fgraph("x*sin(x)+(2-x)");
 
 	load_gameui();
 	show_mainmenu();
