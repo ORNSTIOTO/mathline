@@ -1,5 +1,6 @@
 #include "level.h"
 #include "player.h"
+#include "graph.h"
 #include "engine/physics.h"
 #include "engine/render.h"
 
@@ -13,6 +14,7 @@ struct leveldata data;
 
 enum levelfile_idx {
 	LFIDX_UNKNOWN,
+	LFIDX_FUNC,
 	LFIDX_A,
 	LFIDX_B,
 	LFIDX_STAR,
@@ -39,6 +41,7 @@ static void load_level(struct leveldata ldata)
 	physics_pause();
 	render_feed_leveldata(&data);
 	player_move(data.a);
+	build_fgraph(data.func);
 }
 
 void reload_level(void)
@@ -72,6 +75,8 @@ struct lpar {
 
 static enum levelfile_idx lfidx_from_name(const char *name)
 {
+	if (strcmp(name, "func") == 0)
+		return LFIDX_FUNC;
 	if (strcmp(name, "a") == 0)
 		return LFIDX_A;
 	if (strcmp(name, "b") == 0)
@@ -131,6 +136,22 @@ static enum levelfile_idx read_name(struct lpar *lpar)
 	return lfidx_from_name(buf);
 }
 
+static void read_until(struct lpar *lpar, char until, char *buf)
+{
+	size_t i = 0;
+
+	for (;;) {
+		const char c = advance(lpar);
+
+		if (c == 0 || c == '\n' || c == until)
+			break;
+
+		buf[i++] = c;
+	}
+
+	buf[i] = 0;
+}
+
 static float read_number(struct lpar *lpar)
 {
 	char buf[16];
@@ -141,7 +162,7 @@ static float read_number(struct lpar *lpar)
 	for (;;) {
 		const char c = advance(lpar);
 
-		if (c == 0 || ((c < '0' || c > '9') && c != '.'))
+		if (c == 0 || ((c < '0' || c > '9') && c != '.' && c != '-'))
 			break;
 
 		buf[i++] = c;
@@ -150,6 +171,11 @@ static float read_number(struct lpar *lpar)
 	buf[i] = 0;
 
 	return (float)atof(buf);
+}
+
+static void read_func(struct lpar *lpar, char *buf)
+{
+	read_until(lpar, '\n', buf);
 }
 
 static void omit(struct lpar *lpar)
@@ -195,6 +221,12 @@ static void read_pair(struct lpar *lpar)
 	const enum levelfile_idx name = read_name(lpar);
 
 	switch (name) {
+	case LFIDX_FUNC: {
+		char func[64];
+		read_func(lpar, func);
+		strcpy(lpar->ldata.func, func);
+		break;
+	}
 	case LFIDX_A: {
 		const float x = read_number(lpar);
 		const float y = read_number(lpar);
@@ -217,7 +249,8 @@ static void read_pair(struct lpar *lpar)
 		read_obstacles(lpar);
 		break;
 	}
-	default:
+	case LFIDX_UNKNOWN:
+		printf("UNKNOWN PAIR NAME FOUND IN LEVEL FILE.\n");
 		break;
 	}
 }
@@ -236,7 +269,7 @@ static int load_level_file(const char *filename)
 				   sizeof(struct obstacle), 8, 1), },
 	};
 
-	for (size_t i = 0; i < 4; ++i)
+	for (size_t i = 0; i < 5; ++i)
 		read_pair(&lpar);
 
 	load_level(lpar.ldata);
