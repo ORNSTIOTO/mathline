@@ -10,13 +10,9 @@ extern struct game game;
 
 #define PHYSICS_G 130.0F
 #define BOUNCE 0.1F
-#define FF 0.2F // friction factor or smth
+#define FF 0.95F // friction factor or smth
 
-#define V2right      \
-	(Vector2)    \
-	{            \
-		1, 0 \
-	}
+#define V2right (Vector2){1, 0}
 
 struct {
 	_Bool paused;
@@ -28,7 +24,7 @@ static void player_update(const float fdt)
 {
 	if (physics.paused)
 		return;
-
+	
 	struct player *player = game.player;
 
 	//	printf("x force: %f\n", player->body.force.x);
@@ -38,7 +34,8 @@ static void player_update(const float fdt)
 	player->body.force = f;
 	// r is the 'arm vector' that goes from the center of mass to the point of force application
 	Vector2 r = (Vector2){ 200, 0 };
-	player->body.torque = r.x * f.y - r.y * f.x;
+	//player->body.torque = r.x * f.y - r.y * f.x;
+	player->body.torque = player->body.collision.x * player->body.linear_velocity.y - player->body.collision.y * player->body.linear_velocity.x;
 
 	Vector2 linear_acceleration =
 		(Vector2){ player->body.force.x / player->body.mass,
@@ -81,14 +78,13 @@ static void player_update(const float fdt)
 			hit_distance);
 
 		Vector2 c;
-		//player->pos = Vector2Add(player->pos,  diff  ); // based on hit_distance
+		player->pos = Vector2Add(player->pos,  diff  ); // based on hit_distance
 		//player->pos = Vector2Add(player->pos,  Vector2Scale(Vector2Negate(vel_normal), Vector2Length(diff))  ); // based on vel_normal
-		for (int i = 0; i < 20; i++) {
-			player->pos =
-				Vector2Add(player->pos, player->body.coll_nor);
-			if (!player_collides(&c))
-				break;
-		}
+		// for (int i = 0; i < 20; i++) { // based on coll_nor
+		// 	player->pos = Vector2Add(player->pos, player->body.coll_nor);
+		// 	if (!player_collides(&c))
+		// 		break;
+		// }
 		player->pos =
 			Vector2Subtract(player->pos, player->body.coll_nor);
 
@@ -101,15 +97,23 @@ static void player_update(const float fdt)
 		//player->body.friction = Vector2Scale(slope, Vector2Length(player->body.linear_velocity));
 		//player->body.friction = Vector2Rotate((Vector2){0,PHYSICS_G}, Vector2Angle(V2right,slope));
 
+
+
 		player->body.coll_nor = Vector2Normalize((Vector2){
 			player->pos.x - coll.x, player->pos.y - coll.y });
 
 		Vector2 move, slide = (Vector2){ 0, 0 };
 		move = Vector2Reflect(player->body.linear_velocity,
-				      player->body.coll_nor);
+				player->body.coll_nor);
 
 		if (player->body.on_ground == 1) {
 			move = Vector2Scale(move, BOUNCE);
+		} else {
+			move = Vector2Scale(move, FF);
+			
+			Vector2 delta = Vector2Subtract(player->old_pos, player->pos);
+			float dir = Vector3Normalize(Vector3CrossProduct((Vector3){delta.x,delta.y,0}, (Vector3){hit_distance.x,hit_distance.y,0})).z;
+			player->rotation += dir * Vector2Length(delta)/player->radius * 180.0F/PI;
 		}
 		//move = Vector2Rotate((Vector2){0,PHYSICS_G}, Vector2Angle(V2right,slope));
 		//slide = Vector2Scale(player->body.linear_velocity, fabsf(Vector2DotProduct(Vector2Normalize(player->body.linear_velocity), slope)) * FF);
@@ -126,8 +130,9 @@ static void player_update(const float fdt)
 			  player->body.mass * PHYSICS_G * FF *
 				  cosf(Vector2Angle(V2right, slope));
 
-		player->body.friction = Vector2Rotate(
-			(Vector2){ a, 0 }, Vector2Angle(V2right, slope));
+		//player->body.friction = Vector2Rotate(
+		//	(Vector2){ a, 0 }, Vector2Angle(V2right, slope));
+		player->body.friction = coll;
 
 		//player->body.friction = Vector2DotProduct(player->body.linear_velocity, Vector2Rotate(coll, 90));
 
@@ -138,6 +143,7 @@ static void player_update(const float fdt)
 		player->body.on_ground = 0;
 	}
 	//player->body.debug = Vector2Scale(player->body.coll_nor, 10);
+	player->old_pos = player->pos;
 }
 
 void physics_update(float fdt)
