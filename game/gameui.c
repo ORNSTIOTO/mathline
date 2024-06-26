@@ -3,6 +3,7 @@
 #include "graph.h"
 #include "engine/ui.h"
 #include "perfgoals.h"
+#include <raylib.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -57,50 +58,81 @@ static void callback_mm_back_button(void *a)
 
 static void load_screenmenu(void)
 {
+	struct ui_object *main_screen =
+		ui_create(UIC_FRAME, "main_screen", ui_get_root()).object;
+	main_screen->data->size = (UDim2){ { 0, 0 }, { 1, 1 } };
+
 	struct ui_object *screenbckg =
-		ui_create(UIC_IMAGE, "screenbckg", ui_get_root()).object;
-	screenbckg->data->size = (UDim2){ { 0, 0 }, { 1, 1 } };
+		ui_create(UIC_IMAGE, "screenbckg", main_screen).object;
+	screenbckg->data->size = (UDim2){ { 1.78F * SCREEN_H, 0 }, { 0, 1 } };
 	ui_set_image(screenbckg, "res/img/ui/thumbnail.png");
 
 	struct ui_object *main_side =
-		ui_create(UIC_IMAGE, "main_side", screenbckg).object;
+		ui_create(UIC_IMAGE, "main_side", main_screen).object;
 	
 	main_side->data->size = (UDim2){ { 0.6407407407F * SCREEN_H, 0 }, { 0, 1 } };
 	main_side->data->position = (UDim2){ { SCREEN_W-487, 0 }, { 0, 0 } };
 	ui_set_image(main_side, "res/img/ui/main_side.png");
 
+
+	// height 400*0.3016877637F ~= 120
+
 	struct ui_object *sm_lvls =
-		ui_create(UIC_IMAGEBUTTON, "sm_lvls", screenbckg).object;
+		ui_create(UIC_IMAGEBUTTON, "sm_lvls", main_screen).object;
 	sm_lvls->data->imagebutton.img.tint = WHITE;
 	sm_lvls->data->anchor = (Vector2){ 0, 1 };
 	sm_lvls->data->position = (UDim2){ { -440, 300 }, { 1, 0 } };
 	sm_lvls->data->size = (UDim2){ { 400, 400*0.3016877637F }, { 0, 0 } };
-	ui_set_image(sm_lvls, "res/img/ui/mm_levels.png");
+	ui_set_image(sm_lvls, "res/img/ui/mm_button.png");
 	evt_connect(&sm_lvls->data->imagebutton.btn.events.clicked,
 		    callback_lvback);
 
+		struct ui_object *sm_lvls_l = ui_create(UIC_LABEL, "sm_lvls_l", sm_lvls).object;
+		sm_lvls_l->data->transparency = 1;
+		sm_lvls_l->data->position = (UDim2){ { 140, 40 }, { 0, 0 } };
+		sm_lvls_l->data->size = (UDim2){ { 600, 600 }, { 0, 1 } };
+		sm_lvls_l->data->label.text.color = WHITE;
+		ui_set_text(sm_lvls_l, "Levels");
+		ui_set_fonttype(sm_lvls_l, UIF_CRAYON, 50);
+
 	struct ui_object *sm_skins =
-		ui_create(UIC_IMAGEBUTTON, "sm_skins", screenbckg).object;
+		ui_create(UIC_IMAGEBUTTON, "sm_skins", main_screen).object;
 	sm_skins->data->imagebutton.img.tint = WHITE;
 	sm_skins->data->anchor = (Vector2){ 0, 1 };
 	sm_skins->data->position = (UDim2){ { -440, 480 }, { 1, 0 } };
 	sm_skins->data->size = (UDim2){ { 400, 400*0.3016877637F }, { 0, 0 } };
-	ui_set_image(sm_skins, "res/img/ui/mm_continue.png"); // TODO should be "skins"
+	ui_set_image(sm_skins, "res/img/ui/mm_button.png");
 	// evt_connect(&sm_skins->data->imagebutton.btn.events.clicked,
 	// 	    callback_mm_back_button);
 
+		struct ui_object *sm_skins_l = ui_create(UIC_LABEL, "sm_skins_l", sm_skins).object;
+		sm_skins_l->data->transparency = 1;
+		sm_skins_l->data->position = (UDim2){ { 150, 40 }, { 0, 0 } };
+		sm_skins_l->data->size = (UDim2){ { 600, 600 }, { 0, 1 } };
+		sm_skins_l->data->label.text.color = WHITE;
+		ui_set_text(sm_skins_l, "Skins");
+		ui_set_fonttype(sm_skins_l, UIF_CRAYON, 50);
+
 	struct ui_object *sm_exit =
-		ui_create(UIC_IMAGEBUTTON, "sm_exit", screenbckg).object;
+		ui_create(UIC_IMAGEBUTTON, "sm_exit", main_screen).object;
 	sm_exit->data->imagebutton.img.tint = WHITE;
 	sm_exit->data->anchor = (Vector2){ 0, 1 };
 	sm_exit->data->position = (UDim2){ { -440, 660 }, { 1, 0 } };
 	sm_exit->data->size = (UDim2){ { 400, 400*0.3016877637F }, { 0, 0 } };
-	ui_set_image(sm_exit, "res/img/ui/mm_exit.png"); // TODO should be "skins"
+	ui_set_image(sm_exit, "res/img/ui/mm_button.png");
 	// evt_connect(&sm_exit->data->imagebutton.btn.events.clicked,
 	// 	    callback_mm_back_button);
+
+		struct ui_object *sm_exit_l = ui_create(UIC_LABEL, "sm_exit_l", sm_exit).object;
+		sm_exit_l->data->transparency = 1;
+		sm_exit_l->data->position = (UDim2){ { 160, 40 }, { 0, 0 } };
+		sm_exit_l->data->size = (UDim2){ { 600, 600 }, { 0, 1 } };
+		sm_exit_l->data->label.text.color = WHITE;
+		ui_set_text(sm_exit_l, "Exit");
+		ui_set_fonttype(sm_exit_l, UIF_CRAYON, 50);
 	
 
-	screenmenu = screenbckg;
+	screenmenu = main_screen;
 }
 
 static void load_mainmenu(void)
@@ -215,29 +247,53 @@ static void load_levelui(void)
 	pause->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(pause, "res/img/ui/play.png");
 
-	struct ui_object *nawias_prawy =
-		ui_create(UIC_IMAGEBUTTON, "nawias_prawy", calc_back).object;
-	nawias_prawy->data->imagebutton.img.tint = WHITE;
-	nawias_prawy->data->anchor = (Vector2){ 1, 0 };
-	nawias_prawy->data->position = (UDim2){ { -80, 70 }, { 1, 0 } };
-	nawias_prawy->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
-	ui_set_image(nawias_prawy, "res/img/ui/calc_button.png");
+	struct ui_object *right_bracket =
+		ui_create(UIC_IMAGEBUTTON, "right_bracket", calc_back).object;
+	right_bracket->data->imagebutton.img.tint = WHITE;
+	right_bracket->data->anchor = (Vector2){ 1, 0 };
+	right_bracket->data->position = (UDim2){ { -80, 70 }, { 1, 0 } };
+	right_bracket->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
+	ui_set_image(right_bracket, "res/img/ui/calc_button.png");
 
-	struct ui_object *nawiaslewy =
-		ui_create(UIC_IMAGEBUTTON, "nawiaslewy", calc_back).object;
-	nawiaslewy->data->imagebutton.img.tint = WHITE;
-	nawiaslewy->data->anchor = (Vector2){ 1, 0 };
-	nawiaslewy->data->position = (UDim2){ { -150, 70 }, { 1, 0 } };
-	nawiaslewy->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
-	ui_set_image(nawiaslewy, "res/img/ui/calc_button.png");
+		struct ui_object *right_bracket_l = ui_create(UIC_LABEL, "right_bracket_l", right_bracket).object;
+		right_bracket_l->data->transparency = 1;
+		right_bracket_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		right_bracket_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
+		right_bracket_l->data->label.text.color = WHITE;
+		ui_set_text(right_bracket_l, ")");
+		ui_set_fonttype(right_bracket_l, UIF_CRAYON, 50);
 
-	struct ui_object *potenga =
-		ui_create(UIC_IMAGEBUTTON, "potenga", calc_back).object;
-	potenga->data->imagebutton.img.tint = WHITE;
-	potenga->data->anchor = (Vector2){ 1, 0 };
-	potenga->data->position = (UDim2){ { -220, 70 }, { 1, 0 } };
-	potenga->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
-	ui_set_image(potenga, "res/img/ui/calc_button.png");
+	struct ui_object *left_bracket =
+		ui_create(UIC_IMAGEBUTTON, "left_bracket", calc_back).object;
+	left_bracket->data->imagebutton.img.tint = WHITE;
+	left_bracket->data->anchor = (Vector2){ 1, 0 };
+	left_bracket->data->position = (UDim2){ { -150, 70 }, { 1, 0 } };
+	left_bracket->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
+	ui_set_image(left_bracket, "res/img/ui/calc_button.png");
+
+		struct ui_object *left_bracket_l = ui_create(UIC_LABEL, "left_bracket_l", left_bracket).object;
+		left_bracket_l->data->transparency = 1;
+		left_bracket_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		left_bracket_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
+		left_bracket_l->data->label.text.color = WHITE;
+		ui_set_text(left_bracket_l, "(");
+		ui_set_fonttype(left_bracket_l, UIF_CRAYON, 50);
+
+	struct ui_object *power =
+		ui_create(UIC_IMAGEBUTTON, "power", calc_back).object;
+	power->data->imagebutton.img.tint = WHITE;
+	power->data->anchor = (Vector2){ 1, 0 };
+	power->data->position = (UDim2){ { -220, 70 }, { 1, 0 } };
+	power->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
+	ui_set_image(power, "res/img/ui/calc_button.png");
+
+		struct ui_object *power_l = ui_create(UIC_LABEL, "power_l", power).object;
+		power_l->data->transparency = 1;
+		power_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		power_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
+		power_l->data->label.text.color = WHITE;
+		ui_set_text(power_l, "^");
+		ui_set_fonttype(power_l, UIF_CRAYON, 50);
 
 	struct ui_object *divide =
 		ui_create(UIC_IMAGEBUTTON, "divide", calc_back).object;
@@ -247,6 +303,14 @@ static void load_levelui(void)
 	divide->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(divide, "res/img/ui/calc_button.png");
 
+		struct ui_object *divide_l_fnsdjfn = ui_create(UIC_LABEL, "divide_l", divide).object;
+		divide_l_fnsdjfn->data->transparency = 1;
+		divide_l_fnsdjfn->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		divide_l_fnsdjfn->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
+		divide_l_fnsdjfn->data->label.text.color = WHITE;
+		ui_set_text(divide_l_fnsdjfn, "/");
+		ui_set_fonttype(divide_l_fnsdjfn, UIF_CRAYON, 50);
+
 	struct ui_object *multiplicate =
 		ui_create(UIC_IMAGEBUTTON, "multiplicate", calc_back).object;
 	multiplicate->data->imagebutton.img.tint = WHITE;
@@ -254,6 +318,14 @@ static void load_levelui(void)
 	multiplicate->data->position = (UDim2){ { -80, 140 }, { 1, 0 } };
 	multiplicate->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(multiplicate, "res/img/ui/calc_button.png");
+
+		struct ui_object *multiplicate_l = ui_create(UIC_LABEL, "multiplicate_l", multiplicate).object;
+		multiplicate_l->data->transparency = 1;
+		multiplicate_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		multiplicate_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
+		multiplicate_l->data->label.text.color = WHITE;
+		ui_set_text(multiplicate_l, "*");
+		ui_set_fonttype(multiplicate_l, UIF_CRAYON, 50);
 
 	struct ui_object *substract =
 		ui_create(UIC_IMAGEBUTTON, "substract", calc_back).object;
@@ -263,6 +335,13 @@ static void load_levelui(void)
 	substract->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(substract, "res/img/ui/calc_button.png");
 
+		struct ui_object *substract_l = ui_create(UIC_LABEL, "substract_l", substract).object;
+		substract_l->data->transparency = 1;
+		substract_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		substract_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
+		substract_l->data->label.text.color = WHITE;
+		ui_set_text(substract_l, "-");
+		ui_set_fonttype(substract_l, UIF_CRAYON, 50);
 	
 	struct ui_object *add =
 		ui_create(UIC_IMAGEBUTTON, "add", calc_back).object;
@@ -272,6 +351,14 @@ static void load_levelui(void)
 	add->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(add, "res/img/ui/calc_button.png");
 
+		struct ui_object *add_l = ui_create(UIC_LABEL, "add_l", add).object;
+		add_l->data->transparency = 1;
+		add_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		add_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
+		add_l->data->label.text.color = WHITE;
+		ui_set_text(add_l, "+");
+		ui_set_fonttype(add_l, UIF_CRAYON, 50);
+
 	struct ui_object *x =
 		ui_create(UIC_IMAGEBUTTON, "x", calc_back).object;
 	x->data->imagebutton.img.tint = WHITE;
@@ -279,6 +366,14 @@ static void load_levelui(void)
 	x->data->position = (UDim2){ { -220, 210 }, { 1, 0 } };
 	x->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(x, "res/img/ui/calc_x_button.png");
+
+		struct ui_object *x_l = ui_create(UIC_LABEL, "x_l", x).object;
+		x_l->data->transparency = 1;
+		x_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		x_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
+		x_l->data->label.text.color = WHITE;
+		ui_set_text(x_l, "x");
+		ui_set_fonttype(x_l, UIF_CRAYON, 50);
 
 	struct ui_object *sin =
 		ui_create(UIC_IMAGEBUTTON, "sin", calc_back).object;
@@ -288,6 +383,14 @@ static void load_levelui(void)
 	sin->data->size = (UDim2){ { 95, 60 }, { 0, 0 } };
 	ui_set_image(sin, "res/img/ui/wide_calc_button.png");
 
+		struct ui_object *sin_l = ui_create(UIC_LABEL, "sin_l", sin).object;
+		sin_l->data->transparency = 1;
+		sin_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		sin_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
+		sin_l->data->label.text.color = WHITE;
+		ui_set_text(sin_l, "sin");
+		ui_set_fonttype(sin_l, UIF_CRAYON, 50);
+
 	struct ui_object *abs =
 		ui_create(UIC_IMAGEBUTTON, "abs", calc_back).object;
 	abs->data->imagebutton.img.tint = WHITE;
@@ -296,6 +399,13 @@ static void load_levelui(void)
 	abs->data->size = (UDim2){ { 95, 60 }, { 0, 0 } };
 	ui_set_image(abs, "res/img/ui/wide_calc_button.png");
 	
+		struct ui_object *abs_l = ui_create(UIC_LABEL, "abs_l", abs).object;
+		abs_l->data->transparency = 1;
+		abs_l->data->position = (UDim2){ { 25, 5 }, { 0, 0 } };
+		abs_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
+		abs_l->data->label.text.color = WHITE;
+		ui_set_text(abs_l, "abs");
+		ui_set_fonttype(abs_l, UIF_CRAYON, 50);
 
 
 	levelui = canvas;
