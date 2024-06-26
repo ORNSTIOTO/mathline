@@ -42,6 +42,9 @@ static void render_obstacle(struct obstacle *obstacle)
 			   .height = obstacle->size.y };
 	DrawRectanglePro(rect, (Vector2){ rect.width / 2, rect.height / 2 },
 			 obstacle->rotation, OBSTACLE_COLOR);
+
+	// DrawCircleV(Vector2Subtract(obstacle->pos, Vector2Rotate((Vector2){obstacle->size.x/2-obstacle->size.y/2,0}, obstacle->rotation*PI/180.0F) ), 10, RED);
+	// DrawCircleV(Vector2Add(obstacle->pos, Vector2Rotate((Vector2){obstacle->size.x/2-obstacle->size.y/2,0}, obstacle->rotation*PI/180.0F) ), 10, RED);
 }
 
 static void render_obstacles(void)

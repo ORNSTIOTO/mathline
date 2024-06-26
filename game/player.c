@@ -6,6 +6,7 @@
 
 #include "engine/physics.h"
 #include "level.h"
+#include <raylib.h>
 #include <raymath.h>
 #include <stdio.h>
 #include <string.h>
@@ -68,11 +69,28 @@ static _Bool player_collides_with_graph(Vector2 *point)
 
 static _Bool player_collides_with_obstacle(struct obstacle ob, Vector2 *point)
 {
-	if (Vector2Distance(player.pos, ob.pos) < player.radius * 2) {
-		*point = Vector2Subtract(
-			ob.pos,
-			Vector2Scale(Vector2Subtract(ob.pos, player.pos),
-				     0.5F));
+	const float height = ob.size.y/2;
+	Vector2 points[2];
+	// if (Vector2Distance(player.pos, ob.pos) < player.radius *2) {
+	// 	*point = Vector2Subtract(ob.pos, Vector2Scale(Vector2Subtract(ob.pos, player.pos), 0.5F));
+	// 	return 1;}
+	// return 0;
+
+	points[0] = Vector2Subtract(ob.pos, Vector2Rotate((Vector2){ob.size.x/2-height,0}, ob.rotation*PI/180.0F) );
+	points[1] = Vector2Add(ob.pos, Vector2Rotate((Vector2){ob.size.x/2-height,0}, ob.rotation*PI/180.0F) );
+
+	// 0-1
+	Vector2 line_vec = Vector2Subtract(points[1], points[0]);
+	Vector2 ballToLineStart = Vector2Subtract(player.pos, points[0]);
+	float lineLength = Vector2Length(line_vec);
+	Vector2 lineDir = Vector2Normalize(line_vec);
+	float projection = Vector2DotProduct(ballToLineStart, lineDir);
+	projection = fmaxf(0, fminf(projection, lineLength));
+	Vector2 closestPoint = Vector2Add(points[0], Vector2Scale(lineDir, projection));
+	Vector2 distToBall = Vector2Subtract(player.pos, closestPoint);
+	float dist = Vector2Length(distToBall);
+	if (dist <= height + player.radius) {
+		*point = Vector2Add(closestPoint, Vector2Scale(Vector2Normalize(distToBall), height));
 		return 1;
 	}
 	return 0;
