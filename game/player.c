@@ -32,7 +32,7 @@ static _Bool player_collides_with_graph(Vector2 *point)
 	float old_dist = INFINITY;
 	float dist;
 
-	size_t points = 5000;
+	size_t points = arraylist_count(&game.graph_points);
 	for (size_t i = 0; i < points; ++i) {
 		//	const float x = (float)i - (float)points / 2;
 		//	const float *y = arraylist_get(&game.graph_points, i);
