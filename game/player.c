@@ -41,6 +41,9 @@ static _Bool player_collides_with_graph(Vector2 *point)
 
 		const Vector2 *p = arraylist_get(&game.graph_points, i);
 
+		if (p == NULL)
+			continue;
+
 		if (player_contained(*p, &dist)) {
 			if (dist < old_dist) {
 				old_dist = dist;
