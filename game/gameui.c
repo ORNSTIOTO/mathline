@@ -1,3 +1,4 @@
+#include "game.h"
 #include "gameui.h"
 #include "level.h"
 #include "graph.h"
@@ -54,6 +55,14 @@ static void callback_mm_back_button(void *a)
 		return;
 
 	show_screenmenu();
+}
+
+static void callback_exit(void *a)
+{
+	if (!screenmenu->data->visible)
+		return;
+
+	game_exit();
 }
 
 static void load_screenmenu(void)
@@ -120,8 +129,8 @@ static void load_screenmenu(void)
 	sm_exit->data->position = (UDim2){ { -440, 660 }, { 1, 0 } };
 	sm_exit->data->size = (UDim2){ { 400, 400*0.3016877637F }, { 0, 0 } };
 	ui_set_image(sm_exit, "res/img/ui/mm_button.png");
-	// evt_connect(&sm_exit->data->imagebutton.btn.events.clicked,
-	// 	    callback_mm_back_button);
+	evt_connect(&sm_exit->data->imagebutton.btn.events.clicked,
+		    callback_exit);
 
 		struct ui_object *sm_exit_l = ui_create(UIC_LABEL, "sm_exit_l", sm_exit).object;
 		sm_exit_l->data->transparency = 1;

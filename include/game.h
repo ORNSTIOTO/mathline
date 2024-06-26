@@ -37,4 +37,5 @@ void final_update(void); // rendering
 
 void process_frame(void);
 
+int game_exit(void);
 #endif

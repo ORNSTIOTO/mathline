@@ -206,3 +206,9 @@ void process_frame(void)
 	late_update(dt);
 	final_update();
 }
+
+int game_exit(void)
+{
+	CloseWindow();
+	exit(0);
+}
