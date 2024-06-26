@@ -1,4 +1,5 @@
 #include "level.h"
+#include "game.h"
 #include "player.h"
 #include "graph.h"
 #include "engine/physics.h"
@@ -10,7 +11,8 @@
 
 _Bool star_collected = 0;
 
-struct leveldata data;
+//struct leveldata data;
+extern struct game game;
 
 enum levelfile_idx {
 	LFIDX_UNKNOWN,
@@ -33,28 +35,29 @@ static void dest_collision(void)
 
 static void load_level(struct leveldata ldata)
 {
-	data = ldata;
+	//data = ldata;
+	game.level = ldata;
 
 	star_collected = 0;
 
 	reset_player();
 	physics_pause();
-	render_feed_leveldata(&data);
-	player_move(data.a);
-	build_fgraph(data.func);
+	render_feed_leveldata(&game.level);
+	player_move(game.level.a);
+	build_fgraph(game.level.func);
 }
 
 void reload_level(void)
 {
-	load_level(data);
+	load_level(game.level);
 }
 
 void level_control(void)
 {
-	if (player_collides_with(data.star))
+	if (player_collides_with(game.level.star))
 		star_collision();
 
-	if (player_collides_with(data.b))
+	if (player_collides_with(game.level.b))
 		dest_collision();
 }
 

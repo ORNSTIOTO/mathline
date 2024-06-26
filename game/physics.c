@@ -85,8 +85,8 @@ static void player_update(const float fdt)
 		// 	if (!player_collides(&c))
 		// 		break;
 		// }
-		player->pos =
-			Vector2Subtract(player->pos, player->body.coll_nor);
+		//player->pos =
+		//	Vector2Add(player->pos, player->body.coll_nor);
 
 		//printf("dist: { %f, %f}\n", player->body.linear_velocity);
 
@@ -137,7 +137,7 @@ static void player_update(const float fdt)
 		//player->body.friction = Vector2DotProduct(player->body.linear_velocity, Vector2Rotate(coll, 90));
 
 		//player->body.debug = Vector2Scale(Vector2Subtract(Vector2Scale(Vector2Normalize(hit_distance), player->radius), hit_distance),100);
-		player->body.debug = Vector2Scale(diff, 100);
+		player->body.debug = Vector2Scale(player->body.coll_nor, 100);
 
 	} else {
 		player->body.on_ground = 0;

@@ -12,6 +12,8 @@
 
 extern struct game game;
 
+
+// TODO use game.level instead
 static struct {
 	Color graph_color;
 	struct leveldata *leveldata;
@@ -96,7 +98,7 @@ void render(void)
 	texture_draw(&player->tex, player->pos, size, player->rotation,
 		     player->tint);
 
-	DrawCircleV(player->body.collision, 2, ORANGE);
+	DrawCircleV(player->body.collision, 2, GREEN);
 	DrawLineV(player->pos,
 		  (Vector2){ player->pos.x + player->body.debug.x,
 			     player->pos.y + player->body.debug.y },

@@ -2,6 +2,7 @@
 #define __GAME_H__
 
 #include "engine/window.h"
+#include "level.h"
 #include <engine/arraylist.h>
 #include <raylib.h>
 
@@ -14,6 +15,7 @@ struct game {
 	graph_t *graphs;
 	int ngraphs;
 	char *tip;
+	struct leveldata level;
 
 	struct arraylist graph_points;
 

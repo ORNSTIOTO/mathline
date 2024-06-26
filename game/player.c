@@ -70,26 +70,28 @@ static _Bool player_collides_with_graph(Vector2 *point)
 
 static _Bool player_collides_with_obstacle(struct obstacle ob)
 {
-	if (Vector2Distance(player.pos, ob.pos) < player.radius *2)
-		return 1;
+	if (Vector2Distance(player.pos, ob.pos) < player.radius *2) {
+		physics_pause();
+		return 1;}
 	return 0;
 }
 
 _Bool player_collides(Vector2 *point)
 {
-	return player_collides_with_graph(point);
+
+	if (player_collides_with_graph(point)) return 1;
 
 	/*
 	// check direct collisions against all graphs
 	for (int i = 0; i < game.ngraphs; ++i) {
 		if (player_collides_with_graph(game.graphs[i], point)) return 1;
-	}
-	for (size_t i = 0; i < arraylist_count(&game.leveldata->obstacles); ++i) {
-		struct obstacle *ob = arraylist_get(&game.leveldata->obstacles, i);
+	}*/
+	for (size_t i = 0; i < arraylist_count(&game.level.obstacles); ++i) {
+		struct obstacle *ob = arraylist_get(&game.level.obstacles, i);
 		if (player_collides_with_obstacle(*ob)) return 1;
 	}
 	return 0;
-	*/
+	
 }
 
 _Bool player_collides_with(Vector2 p)
@@ -114,6 +116,7 @@ void player_init(void)
 
 void reset_player(void)
 {
+	player.rotation = 0;
 	player.body.linear_velocity = Vector2Zero();
 	player.body.angular_velocity = 0;
 	player.body.linear_accel = Vector2Zero();
