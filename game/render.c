@@ -97,15 +97,15 @@ void render(void)
 
 	const struct player *player = game.player;
 	const Vector2 size = { player->tex_size * 2, player->tex_size * 2 };
-	DrawCircleV(player->pos, player->radius, BLUE);
+	// DrawCircleV(player->pos, player->radius, BLUE);
 	texture_draw(&player->tex, player->pos, size, player->rotation,
 		     player->tint);
 
-	DrawCircleV(player->body.collision, 2, GREEN);
-	DrawLineV(player->pos,
-		  (Vector2){ player->pos.x + player->body.debug.x,
-			     player->pos.y + player->body.debug.y },
-		  RED);
+	// DrawCircleV(player->body.collision, 2, GREEN);
+	// DrawLineV(player->pos,
+	// 	  (Vector2){ player->pos.x + player->body.debug.x,
+	// 		     player->pos.y + player->body.debug.y },
+	// 	  RED);
 }
 
 void render_feed_leveldata(const struct leveldata *data)
