@@ -10,6 +10,7 @@ struct obstacle {
 };
 
 struct leveldata {
+	char func[64];
 	Vector2 a, b, star;
 	struct arraylist obstacles;
 };
