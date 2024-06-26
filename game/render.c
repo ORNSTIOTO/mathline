@@ -61,12 +61,27 @@ static void render_star(void)
 		     WHITE);
 }
 
+static void render_background(void)
+{
+	texture_draw(&game.background.main, game.camera.target,
+		(Vector2){ game.window->screen_w / game.camera.zoom,
+			game.window->screen_h / game.camera.zoom },
+		0, WHITE);
+
+	texture_draw(&game.background.arr_right, (Vector2){game.camera.target.x,0},
+		(Vector2){ game.window->screen_w / game.camera.zoom,
+			game.window->screen_h / game.camera.zoom },
+		0, WHITE);
+
+	texture_draw(&game.background.arr_up, (Vector2){0,game.camera.target.y},
+		(Vector2){ game.window->screen_w / game.camera.zoom,
+			game.window->screen_h / game.camera.zoom },
+		0, WHITE);
+}
+
 void render(void)
 {
-	texture_draw(&game.background, game.camera.target,
-		     (Vector2){ game.window->screen_w / game.camera.zoom,
-				game.window->screen_h / game.camera.zoom },
-		     0, WHITE);
+	render_background();
 	render_graph();
 
 	render_obstacles();
