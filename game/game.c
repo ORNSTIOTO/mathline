@@ -55,21 +55,6 @@ void game_init(struct window *window)
 	//build_fgraph("(1/10000)*x*x*x");
 
 	physics_pause();
-
-	struct arraylist obstacles =
-		arraylist_create(sizeof(struct obstacle), 1);
-	struct obstacle ob1 = { .pos = (Vector2){ 10, -30 },
-				.size = (Vector2){ 100, 45 },
-				30 };
-	arraylist_pushback(&obstacles, &ob1);
-	struct leveldata test = {
-		.a = (Vector2){ 0, -300 },
-		.b = (Vector2){ 0, -20 },
-		.star = (Vector2){ 0, -100 },
-		.obstacles = obstacles,
-		.rd_grf_areas = (struct arraylist){ 0 },
-	};
-	load_level(test);
 }
 
 static void keyboard_debug(void)

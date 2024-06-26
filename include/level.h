@@ -12,12 +12,12 @@ struct obstacle {
 struct leveldata {
 	Vector2 a, b, star;
 	struct arraylist obstacles;
-	struct arraylist rd_grf_areas;
 };
 
-void load_level(struct leveldata data);
 void reload_level(void);
 void level_control(void);
 _Bool level_star_collected(void);
+
+int load_level_num(int n);
 
 #endif

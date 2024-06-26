@@ -22,7 +22,7 @@ Texture2D dest_tex;
 
 static float __f(float x)
 {
-	return x;
+	//return x;
 	//return sinf(powf(x, x)) * x;
 	return sinf(x);
 }
