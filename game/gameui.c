@@ -96,7 +96,7 @@ static void load_levelui(void)
 	canvas->data->size = (UDim2){ { 0, 0 }, { 1, 1 } };
 
 	struct ui_object *input = ui_create(UIC_IMAGE, "input", canvas).object;
-	input->data->position = (UDim2){ { 0, 100 }, { 1, 0 } };
+	input->data->position = (UDim2){ { 0, 10 }, { 1, 0 } };
 	input->data->size = (UDim2){ { 300, 50 }, { 0, 0 } };
 	input->data->anchor = (Vector2){ 1, 0 };
 	ui_set_image(input, "res/img/ui/input.png");
@@ -131,6 +131,104 @@ static void load_levelui(void)
 	ui_set_image(back, "res/img/ui/back.png");
 	evt_connect(&back->data->imagebutton.btn.events.clicked,
 		    callback_lvback);
+
+	struct ui_object *calc_back =
+		ui_create(UIC_IMAGE, "calc_back", canvas).object;
+	calc_back->data->anchor = (Vector2){ 1, 0 };
+	calc_back->data->position = (UDim2){ { 0, 10 }, { 1, 0 } };
+	calc_back->data->size = (UDim2){ { 310, 310 }, { 0, 0 } };
+	ui_set_image(calc_back, "res/img/ui/calc_back.png");
+
+	struct ui_object *pause =
+		ui_create(UIC_IMAGEBUTTON, "pause", calc_back).object;
+	pause->data->imagebutton.img.tint = WHITE;
+	pause->data->anchor = (Vector2){ 1, 0 };
+	pause->data->position = (UDim2){ { -10, 70 }, { 1, 0 } };
+	pause->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
+	ui_set_image(pause, "res/img/ui/play.png");
+
+	struct ui_object *nawias_prawy =
+		ui_create(UIC_IMAGEBUTTON, "nawias_prawy", calc_back).object;
+	nawias_prawy->data->imagebutton.img.tint = WHITE;
+	nawias_prawy->data->anchor = (Vector2){ 1, 0 };
+	nawias_prawy->data->position = (UDim2){ { -80, 70 }, { 1, 0 } };
+	nawias_prawy->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
+	ui_set_image(nawias_prawy, "res/img/ui/calc_button.png");
+
+	struct ui_object *nawiaslewy =
+		ui_create(UIC_IMAGEBUTTON, "nawiaslewy", calc_back).object;
+	nawiaslewy->data->imagebutton.img.tint = WHITE;
+	nawiaslewy->data->anchor = (Vector2){ 1, 0 };
+	nawiaslewy->data->position = (UDim2){ { -150, 70 }, { 1, 0 } };
+	nawiaslewy->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
+	ui_set_image(nawiaslewy, "res/img/ui/calc_button.png");
+
+	struct ui_object *potenga =
+		ui_create(UIC_IMAGEBUTTON, "potenga", calc_back).object;
+	potenga->data->imagebutton.img.tint = WHITE;
+	potenga->data->anchor = (Vector2){ 1, 0 };
+	potenga->data->position = (UDim2){ { -220, 70 }, { 1, 0 } };
+	potenga->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
+	ui_set_image(potenga, "res/img/ui/calc_button.png");
+
+	struct ui_object *divide =
+		ui_create(UIC_IMAGEBUTTON, "divide", calc_back).object;
+	divide->data->imagebutton.img.tint = WHITE;
+	divide->data->anchor = (Vector2){ 1, 0 };
+	divide->data->position = (UDim2){ { -10, 140 }, { 1, 0 } };
+	divide->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
+	ui_set_image(divide, "res/img/ui/calc_button.png");
+
+	struct ui_object *multiplicate =
+		ui_create(UIC_IMAGEBUTTON, "multiplicate", calc_back).object;
+	multiplicate->data->imagebutton.img.tint = WHITE;
+	multiplicate->data->anchor = (Vector2){ 1, 0 };
+	multiplicate->data->position = (UDim2){ { -80, 140 }, { 1, 0 } };
+	multiplicate->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
+	ui_set_image(multiplicate, "res/img/ui/calc_button.png");
+
+	struct ui_object *substract =
+		ui_create(UIC_IMAGEBUTTON, "substract", calc_back).object;
+	substract->data->imagebutton.img.tint = WHITE;
+	substract->data->anchor = (Vector2){ 1, 0 };
+	substract->data->position = (UDim2){ { -150, 140 }, { 1, 0 } };
+	substract->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
+	ui_set_image(substract, "res/img/ui/calc_button.png");
+
+	
+	struct ui_object *add =
+		ui_create(UIC_IMAGEBUTTON, "add", calc_back).object;
+	add->data->imagebutton.img.tint = WHITE;
+	add->data->anchor = (Vector2){ 1, 0 };
+	add->data->position = (UDim2){ { -220, 140 }, { 1, 0 } };
+	add->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
+	ui_set_image(add, "res/img/ui/calc_button.png");
+
+	struct ui_object *x =
+		ui_create(UIC_IMAGEBUTTON, "x", calc_back).object;
+	x->data->imagebutton.img.tint = WHITE;
+	x->data->anchor = (Vector2){ 1, 0 };
+	x->data->position = (UDim2){ { -220, 210 }, { 1, 0 } };
+	x->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
+	ui_set_image(x, "res/img/ui/calc_x_button.png");
+
+	struct ui_object *sin =
+		ui_create(UIC_IMAGEBUTTON, "sin", calc_back).object;
+	sin->data->imagebutton.img.tint = WHITE;
+	sin->data->anchor = (Vector2){ 1, 0 };
+	sin->data->position = (UDim2){ { -115, 210 }, { 1, 0 } };
+	sin->data->size = (UDim2){ { 95, 60 }, { 0, 0 } };
+	ui_set_image(sin, "res/img/ui/wide_calc_button.png");
+
+	struct ui_object *abs =
+		ui_create(UIC_IMAGEBUTTON, "abs", calc_back).object;
+	abs->data->imagebutton.img.tint = WHITE;
+	abs->data->anchor = (Vector2){ 1, 0 };
+	abs->data->position = (UDim2){ { -10, 210 }, { 1, 0 } };
+	abs->data->size = (UDim2){ { 95, 60 }, { 0, 0 } };
+	ui_set_image(abs, "res/img/ui/wide_calc_button.png");
+	
+
 
 	levelui = canvas;
 }
