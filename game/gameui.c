@@ -181,8 +181,8 @@ static void load_skinsui(void)
 	struct ui_object *sk1 =
 		ui_create(UIC_IMAGEBUTTON, "sk_one1", canvas).object;
 	sk1->data->imagebutton.img.tint = WHITE;
-	sk1->data->size = (UDim2){ { 72, 72 }, { 0, 0 } };
-	sk1->data->position = (UDim2){ { -120, 0 }, { 0.5F, 0.5F } };
+	sk1->data->size = (UDim2){ { 150, 150 }, { 0, 0 } };
+	sk1->data->position = (UDim2){ { -600, -75 }, { 0.5F, 0.5F } };
 	ui_set_image(sk1, "res/img/ball/armadillo.png");
 	set_skin(sk1, "armadillo");
 	evt_connect(&sk1->data->imagebutton.btn.events.clicked, callback_sk1);
@@ -190,48 +190,48 @@ static void load_skinsui(void)
 	struct ui_object *sk2 =
 		ui_create(UIC_IMAGEBUTTON, "sk_two2", canvas).object;
 	sk2->data->imagebutton.img.tint = WHITE;
-	sk2->data->size = (UDim2){ { 72, 72 }, { 0, 0 } };
-	sk2->data->position = (UDim2){ { -60, 0 }, { 0.5F, 0.5F } };
+	sk2->data->size = (UDim2){ { 150, 150 }, { 0, 0 } };
+	sk2->data->position = (UDim2){ { -425, -75 }, { 0.5F, 0.5F } };
 	ui_set_image(sk2, "res/img/ball/bird.png");
 	evt_connect(&sk2->data->imagebutton.btn.events.clicked, callback_sk2);
 
 	struct ui_object *sk3 =
 		ui_create(UIC_IMAGEBUTTON, "sk_three3", canvas).object;
 	sk3->data->imagebutton.img.tint = WHITE;
-	sk3->data->size = (UDim2){ { 72, 72 }, { 0, 0 } };
-	sk3->data->position = (UDim2){ { 0, 0 }, { 0.5F, 0.5F } };
-	ui_set_image(sk3, "res/img/ball/chinchilla.png");
+	sk3->data->size = (UDim2){ { 150, 150 }, { 0, 0 } };
+	sk3->data->position = (UDim2){ { -250, -75 }, { 0.5F, 0.5F } };
+	ui_set_image(sk3, "res/img/ball/piesoszczur.png");
 	evt_connect(&sk3->data->imagebutton.btn.events.clicked, callback_sk3);
 
 	struct ui_object *sk4 =
 		ui_create(UIC_IMAGEBUTTON, "sk_four4", canvas).object;
 	sk4->data->imagebutton.img.tint = WHITE;
-	sk4->data->size = (UDim2){ { 72, 72 }, { 0, 0 } };
-	sk4->data->position = (UDim2){ { 60, 0 }, { 0.5F, 0.5F } };
+	sk4->data->size = (UDim2){ { 150, 150 }, { 0, 0 } };
+	sk4->data->position = (UDim2){ { -75, -75 }, { 0.5F, 0.5F } };
 	ui_set_image(sk4, "res/img/ball/corgi.png");
 	evt_connect(&sk4->data->imagebutton.btn.events.clicked, callback_sk4);
 
 	struct ui_object *sk5 =
 		ui_create(UIC_IMAGEBUTTON, "sk_five587125", canvas).object;
 	sk5->data->imagebutton.img.tint = WHITE;
-	sk5->data->size = (UDim2){ { 72, 72 }, { 0, 0 } };
-	sk5->data->position = (UDim2){ { 120, 0 }, { 0.5F, 0.5F } };
+	sk5->data->size = (UDim2){ { 150, 150 }, { 0, 0 } };
+	sk5->data->position = (UDim2){ { 100, -75 }, { 0.5F, 0.5F } };
 	ui_set_image(sk5, "res/img/ball/hedgehog.png");
 	evt_connect(&sk5->data->imagebutton.btn.events.clicked, callback_sk5);
 
 	struct ui_object *sk6 =
 		ui_create(UIC_IMAGEBUTTON, "sk_six6dJi", canvas).object;
 	sk6->data->imagebutton.img.tint = WHITE;
-	sk6->data->size = (UDim2){ { 72, 72 }, { 0, 0 } };
-	sk6->data->position = (UDim2){ { 180, 0 }, { 0.5F, 0.5F } };
+	sk6->data->size = (UDim2){ { 150, 150 }, { 0, 0 } };
+	sk6->data->position = (UDim2){ { 275, -75 }, { 0.5F, 0.5F } };
 	ui_set_image(sk6, "res/img/ball/puffer.png");
 	evt_connect(&sk6->data->imagebutton.btn.events.clicked, callback_sk6);
 
 	struct ui_object *sk7 =
 		ui_create(UIC_IMAGEBUTTON, "sk_seven7", canvas).object;
 	sk7->data->imagebutton.img.tint = WHITE;
-	sk7->data->size = (UDim2){ { 72, 72 }, { 0, 0 } };
-	sk7->data->position = (UDim2){ { 240, 0 }, { 0.5F, 0.5F } };
+	sk7->data->size = (UDim2){ { 150, 150 }, { 0, 0 } };
+	sk7->data->position = (UDim2){ { 450, -75 }, { 0.5F, 0.5F } };
 	ui_set_image(sk7, "res/img/ball/seal.png");
 	evt_connect(&sk7->data->imagebutton.btn.events.clicked, callback_sk7);
 
