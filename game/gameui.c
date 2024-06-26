@@ -142,7 +142,7 @@ static void callback_sk2(void *a)
 static void callback_sk3(void *a)
 {
 	struct evtbtn_args *args = a;
-	set_skin(args->button, "chinchilla");
+	set_skin(args->button, "piesoszczur");
 }
 
 static void callback_sk4(void *a)
