@@ -13,10 +13,15 @@ struct game {
 	struct player *player;
 	graph_t *graphs;
 	int ngraphs;
-	Texture2D background;
 	char *tip;
 
 	struct arraylist graph_points;
+
+	struct {
+		Texture2D main;
+		Texture2D arr_right;
+		Texture2D arr_up;
+	} background;
 };
 
 void game_init(struct window *window);

@@ -35,7 +35,9 @@ static void setup_camera(void)
 
 static void background_init(void)
 {
-	texture_load(&game.background, "res/img/ui/back1line.png");
+	texture_load(&game.background.main, "res/img/ui/back1.png");
+	texture_load(&game.background.arr_right, "res/img/ui/arrow_right.png");
+	texture_load(&game.background.arr_up, "res/img/ui/arrow_up.png");
 }
 
 void game_init(struct window *window)
