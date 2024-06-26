@@ -62,7 +62,7 @@ void game_init(struct window *window)
 	//	;
 
 	load_gameui();
-	show_mainmenu();
+	show_screenmenu();
 }
 
 static void keyboard_debug(int c)
