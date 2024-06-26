@@ -53,6 +53,7 @@ struct tok {
 };
 
 struct node {
+	_Bool negative;
 	struct node *left, *right;
 	struct tok tok;
 };
@@ -130,6 +131,7 @@ static struct arraylist lex_expr(struct lexer *lex)
 	size_t bi = 0;
 
 	size_t paren_count = 0;
+	_Bool first = 1;
 
 	for (;;) {
 		const char c = lex_advance(lex);
@@ -145,13 +147,19 @@ static struct arraylist lex_expr(struct lexer *lex)
 
 		const enum toktype tt = tt_from_char(c);
 
+		first = 0;
+
 		if (search == TT_DEFAULT) {
 			search = tt;
 			buffer[bi++] = c;
+			first = 1;
 		}
 
 		const char next = lex_peek(lex, 1);
 		const enum toktype next_tt = tt_from_char(next);
+
+		if (!first)
+			buffer[bi++] = c;
 
 		if (next_tt != search) {
 			if (search != TT_UNKNOWN) {
@@ -168,8 +176,7 @@ static struct arraylist lex_expr(struct lexer *lex)
 			search = TT_DEFAULT;
 			memset(buffer, 0, bi);
 			bi = 0;
-		} else
-			buffer[bi++] = c;
+		}
 
 		if (next == 0)
 			break;
@@ -190,6 +197,7 @@ static struct node *newnode(struct tok tok)
 {
 	struct node *node = malloc(sizeof(struct node));
 	node->tok = tok;
+	node->negative = 0;
 	node->left = NULL;
 	node->right = NULL;
 	return node;
@@ -227,12 +235,25 @@ struct node *parse_expr(struct parser *par, enum prec min_prec);
 static struct node *parse_primary(struct parser *par, enum prec min_prec)
 {
 	struct tok tok = parser_advance(par);
+	struct tok next = parser_peek(par, 1);
 
-	if (parser_peek(par, 1).type != TT_X)
-		return newnode(tok);
+	const _Bool negative = tok.type == TT_OP && tok.op == '-' &&
+			       (next.type == TT_NUM || next.type == TT_X);
+
+	if (negative) {
+		tok = parser_advance(par);
+		next = parser_peek(par, 1);
+	}
+
+	if (next.type != TT_X) {
+		struct node *node = newnode(tok);
+		node->negative = negative;
+		return node;
+	}
 
 	struct node *mul = newnode((struct tok){ .type = TT_OP, .op = '*' });
 	mul->left = newnode(tok);
+	mul->left->negative = negative;
 	mul->right = newnode(parser_advance(par));
 	return mul;
 }
@@ -322,9 +343,9 @@ static float calculate_for_x(struct node *node, float x)
 		return 0;
 	}
 	case TT_NUM:
-		return node->tok.num;
+		return node->negative ? -node->tok.num : node->tok.num;
 	case TT_X:
-		return x;
+		return node->negative ? -x : x;
 	default:
 		return 0;
 	}
