@@ -1,0 +1,6 @@
+func:0,5x+90
+a:350,-50
+b:220,200
+star:20,90
+obstacles:270,260,250,30,35
+solution: 0.3*x-120 after star -0.6*x -100

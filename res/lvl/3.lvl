@@ -1,0 +1,6 @@
+func:0.4*x-135
+a:330,-20
+b:-400,130
+star:-30,60
+obstacles:
+solution: 0.2*x-70

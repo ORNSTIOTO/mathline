@@ -3,7 +3,7 @@
 
 #include <raylib.h>
 
-#define GRAPH_SCALE 30
+#define GRAPH_SCALE 1
 
 void render_graph(void);
 void build_fgraph(const char *expr);
