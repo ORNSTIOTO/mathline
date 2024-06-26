@@ -1,4 +1,4 @@
-#include "game.h"
+ #include "game.h"
 #include "gameui.h"
 #include "level.h"
 #include "graph.h"
@@ -433,23 +433,15 @@ static void load_levelui(void)
 	struct ui_object *calc_back =
 		ui_create(UIC_IMAGE, "calc_back", canvas).object;
 	calc_back->data->anchor = (Vector2){ 1, 0 };
-	calc_back->data->position = (UDim2){ { 0, 10 }, { 1, 0 } };
-	calc_back->data->size = (UDim2){ { 310, 310 }, { 0, 0 } };
+	calc_back->data->position = (UDim2){ { 0, 30 }, { 1, 0 } };
+	calc_back->data->size = (UDim2){ { 310, 200 }, { 0, 0 } };
 	ui_set_image(calc_back, "res/img/ui/calc_back.png");
-
-	struct ui_object *pause =
-		ui_create(UIC_IMAGEBUTTON, "pause", calc_back).object;
-	pause->data->imagebutton.img.tint = WHITE;
-	pause->data->anchor = (Vector2){ 1, 0 };
-	pause->data->position = (UDim2){ { -10, 70 }, { 1, 0 } };
-	pause->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
-	ui_set_image(pause, "res/img/ui/play.png");
 
 	struct ui_object *right_bracket =
 		ui_create(UIC_IMAGEBUTTON, "right_bracket", calc_back).object;
 	right_bracket->data->imagebutton.img.tint = WHITE;
 	right_bracket->data->anchor = (Vector2){ 1, 0 };
-	right_bracket->data->position = (UDim2){ { -80, 70 }, { 1, 0 } };
+	right_bracket->data->position = (UDim2){ { -80, 45 }, { 1, 0 } };
 	right_bracket->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(right_bracket, "res/img/ui/calc_button.png");
 
@@ -466,7 +458,7 @@ static void load_levelui(void)
 		ui_create(UIC_IMAGEBUTTON, "left_bracket", calc_back).object;
 	left_bracket->data->imagebutton.img.tint = WHITE;
 	left_bracket->data->anchor = (Vector2){ 1, 0 };
-	left_bracket->data->position = (UDim2){ { -150, 70 }, { 1, 0 } };
+	left_bracket->data->position = (UDim2){ { -150, 45 }, { 1, 0 } };
 	left_bracket->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(left_bracket, "res/img/ui/calc_button.png");
 
@@ -482,8 +474,8 @@ static void load_levelui(void)
 	struct ui_object *power =
 		ui_create(UIC_IMAGEBUTTON, "power", calc_back).object;
 	power->data->imagebutton.img.tint = WHITE;
-	power->data->anchor = (Vector2){ 1, 0 };
-	power->data->position = (UDim2){ { -220, 70 }, { 1, 0 } };
+	power->data->anchor = (Vector2){ 1, 0 } ;
+	power->data->position = (UDim2){ { -220, 45 }, { 1, 0 } };
 	power->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(power, "res/img/ui/calc_button.png");
 
@@ -500,7 +492,7 @@ static void load_levelui(void)
 		ui_create(UIC_IMAGEBUTTON, "divide", calc_back).object;
 	divide->data->imagebutton.img.tint = WHITE;
 	divide->data->anchor = (Vector2){ 1, 0 };
-	divide->data->position = (UDim2){ { -10, 140 }, { 1, 0 } };
+	divide->data->position = (UDim2){ { -10, 115 }, { 1, 0 } };
 	divide->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(divide, "res/img/ui/calc_button.png");
 
@@ -517,7 +509,7 @@ static void load_levelui(void)
 		ui_create(UIC_IMAGEBUTTON, "multiplicate", calc_back).object;
 	multiplicate->data->imagebutton.img.tint = WHITE;
 	multiplicate->data->anchor = (Vector2){ 1, 0 };
-	multiplicate->data->position = (UDim2){ { -80, 140 }, { 1, 0 } };
+	multiplicate->data->position = (UDim2){ { -80, 115 }, { 1, 0 } };
 	multiplicate->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(multiplicate, "res/img/ui/calc_button.png");
 
@@ -534,7 +526,7 @@ static void load_levelui(void)
 		ui_create(UIC_IMAGEBUTTON, "substract", calc_back).object;
 	substract->data->imagebutton.img.tint = WHITE;
 	substract->data->anchor = (Vector2){ 1, 0 };
-	substract->data->position = (UDim2){ { -150, 140 }, { 1, 0 } };
+	substract->data->position = (UDim2){ { -150, 115 }, { 1, 0 } };
 	substract->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(substract, "res/img/ui/calc_button.png");
 
@@ -551,7 +543,7 @@ static void load_levelui(void)
 		ui_create(UIC_IMAGEBUTTON, "add", calc_back).object;
 	add->data->imagebutton.img.tint = WHITE;
 	add->data->anchor = (Vector2){ 1, 0 };
-	add->data->position = (UDim2){ { -220, 140 }, { 1, 0 } };
+	add->data->position = (UDim2){ { -220, 115 }, { 1, 0 } };
 	add->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(add, "res/img/ui/calc_button.png");
 
@@ -566,7 +558,7 @@ static void load_levelui(void)
 	struct ui_object *x = ui_create(UIC_IMAGEBUTTON, "x", calc_back).object;
 	x->data->imagebutton.img.tint = WHITE;
 	x->data->anchor = (Vector2){ 1, 0 };
-	x->data->position = (UDim2){ { -220, 210 }, { 1, 0 } };
+	x->data->position = (UDim2){ { -10, 45 }, { 1, 0 } };
 	x->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(x, "res/img/ui/calc_x_button.png");
 
@@ -578,38 +570,7 @@ static void load_levelui(void)
 	ui_set_text(x_l, "x");
 	ui_set_fonttype(x_l, UIF_CRAYON, 50);
 
-	struct ui_object *sin =
-		ui_create(UIC_IMAGEBUTTON, "sin", calc_back).object;
-	sin->data->imagebutton.img.tint = WHITE;
-	sin->data->anchor = (Vector2){ 1, 0 };
-	sin->data->position = (UDim2){ { -115, 210 }, { 1, 0 } };
-	sin->data->size = (UDim2){ { 95, 60 }, { 0, 0 } };
-	ui_set_image(sin, "res/img/ui/wide_calc_button.png");
-
-	struct ui_object *sin_l = ui_create(UIC_LABEL, "sin_l", sin).object;
-	sin_l->data->transparency = 1;
-	sin_l->data->position = (UDim2){ { 21, 3 }, { 0, 0 } };
-	sin_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
-	sin_l->data->label.text.color = WHITE;
-	ui_set_text(sin_l, "sin");
-	ui_set_fonttype(sin_l, UIF_CRAYON, 50);
-
-	struct ui_object *abs =
-		ui_create(UIC_IMAGEBUTTON, "abs", calc_back).object;
-	abs->data->imagebutton.img.tint = WHITE;
-	abs->data->anchor = (Vector2){ 1, 0 };
-	abs->data->position = (UDim2){ { -10, 210 }, { 1, 0 } };
-	abs->data->size = (UDim2){ { 95, 60 }, { 0, 0 } };
-	ui_set_image(abs, "res/img/ui/wide_calc_button.png");
-
-	struct ui_object *abs_l = ui_create(UIC_LABEL, "abs_l", abs).object;
-	abs_l->data->transparency = 1;
-	abs_l->data->position = (UDim2){ { 18, 3 }, { 0, 0 } };
-	abs_l->data->size = (UDim2){ { 60, 60 }, { 0, 1 } };
-	abs_l->data->label.text.color = WHITE;
-	ui_set_text(abs_l, "abs");
-	ui_set_fonttype(abs_l, UIF_CRAYON, 50);
-
+	
 	levelui = canvas;
 }
 
