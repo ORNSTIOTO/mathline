@@ -586,7 +586,7 @@ void load_victoryui(void)
 	win->data->anchor = (Vector2){ 0.5F, 0.5F };
 	win->data->position = (UDim2){ {0, 0}, {0.5F, 0.5F} };
 	win->data->size = (UDim2){ { 300, 60 }, { 0, 0 } };
-	win->data->label.text.color = WHITE;
+	win->data->label.text.color = ORANGE;
 	ui_set_text(win, "You won!");
 	ui_set_fonttype(win, UIF_CRAYON, 60);
 }
