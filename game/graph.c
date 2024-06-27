@@ -72,7 +72,7 @@ struct lexer {
 
 static enum toktype tt_from_char(char c)
 {
-	return c >= '0' && c <= '9' ? TT_NUM :
+	return c >= '0' && c <= '9' || c == '.' ? TT_NUM :
 	       c == 'x'		    ? TT_X :
 	       c >= 'a' && c <= 'z' ? TT_FUNC :
 	       c == '+' || c == '-' || c == '*' || c == '/' || c == '^' ?
@@ -395,8 +395,12 @@ static struct arraylist gen_gpoints(struct node *ast)
 		arraylist_create_preloaded(sizeof(Vector2), n, 1);
 
 	for (size_t i = 0; i < n; ++i) {
-		const float x = (float)i - (float)n / 2;
-		const float y = calculate_for_x(ast, x);
+		float x = ((float)i - (float)n / 2) / GRAPH_SCALE;
+		float y = calculate_for_x(ast, x);
+
+		x *= GRAPH_SCALE;
+		y *= GRAPH_SCALE;
+
 		const Vector2 p = { x, y };
 		arraylist_pushback(&points, &p);
 	}

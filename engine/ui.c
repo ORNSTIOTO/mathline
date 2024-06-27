@@ -653,7 +653,7 @@ static void draw_text(const struct ui_text *text, Vector2 pos)
 }
 
 static void draw_bound_text(const struct ui_text *text, Vector2 position,
-			    Vector2 bounds)
+			    Vector2 bounds, Color tint)
 {
 	const Font font = *text->font.data;
 	const float fsize = text->font.size;
@@ -692,7 +692,7 @@ draw_word:;
 			const Vector2 pos = { position.x + x, position.y + y };
 			const int ccount = (int)arraylist_count(&codepoints);
 			DrawTextCodepoints(font, codepoints.data, ccount, pos,
-					   fsize, spacing, text->color);
+					   fsize, spacing, tint);
 
 			arraylist_clear(&codepoints);
 
@@ -781,14 +781,14 @@ static void ui_draw_label(const struct ui_descriptor *data)
 {
 	draw_rect(data);
 	draw_bound_text(&data->label.text, data->_abs_position,
-			data->_abs_size);
+			data->_abs_size, data->label.text.color);
 }
 
 static void ui_draw_button(const struct ui_descriptor *data)
 {
 	draw_rect(data);
 	draw_bound_text(&data->button.text, data->_abs_position,
-			data->_abs_size);
+			data->_abs_size, data->label.text.color);
 }
 
 static void ui_draw_image(const struct ui_descriptor *data)
@@ -804,9 +804,11 @@ static void ui_draw_imagebutton(const struct ui_descriptor *data)
 
 static void ui_draw_textbox(const struct ui_descriptor *data)
 {
+	const _Bool foc = data->textbox.box.focused;
+	const Color tint = (Color){ 20, 20, 120, 255 };
 	draw_rect(data);
 	draw_bound_text(&data->textbox.text, data->_abs_position,
-			data->_abs_size);
+			data->_abs_size, foc ? tint : data->textbox.text.color);
 
 	//if (data->textbox.box.focused)
 	// 	draw_cursor(data->_abs_position, );
@@ -1069,6 +1071,10 @@ static void process_textbox_input(struct ui_object *textbox, int c)
 
 	if (IsKeyPressed(KEY_BACKSPACE))
 		textbox_backspace(textbox);
+	if (IsKeyPressed(KEY_ENTER)) {
+		lose_focus();
+		gain_focus(textbox);
+	}
 }
 
 void ui_resolve_keyboard(int c)
