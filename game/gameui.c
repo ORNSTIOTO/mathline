@@ -581,14 +581,21 @@ void load_victoryui(void)
 	victoryui->data->transparency = 1;
 	victoryui->data->size = (UDim2){ { 0, 0 }, { 1, 1 } };
 	victoryui->data->visible = 0;
+
+	struct ui_object *win_fr = ui_create(UIC_IMAGE, "win_frlabel", victoryui).object;
+	ui_set_image(win_fr, "res/img/ui/calc_back.png");
+	win_fr->data->anchor = (Vector2){ 0.5F, 0.5F };
+	win_fr->data->position = (UDim2){ {0, 0}, {0.5F, 0.5F} };
+	win_fr->data->size = (UDim2){ { 500, 200 }, { 0, 0 } };
+
 	struct ui_object *win = ui_create(UIC_LABEL, "winlabel", victoryui).object;
 	win->data->transparency = 1;
 	win->data->anchor = (Vector2){ 0.5F, 0.5F };
-	win->data->position = (UDim2){ {0, 0}, {0.5F, 0.5F} };
-	win->data->size = (UDim2){ { 300, 60 }, { 0, 0 } };
+	win->data->position = (UDim2){ {10, 50}, {0.5F, 0.5F} };
+	win->data->size = (UDim2){ { 400, 200 }, { 0, 0 } };
 	win->data->label.text.color = ORANGE;
 	ui_set_text(win, "You won!");
-	ui_set_fonttype(win, UIF_CRAYON, 60);
+	ui_set_fonttype(win, UIF_CRAYON, 120);
 }
 
 void load_gameui(void)
