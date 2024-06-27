@@ -903,7 +903,7 @@ static void lose_focus(void)
 	click_area.focused = NULL;
 }
 
-static void gain_focus(struct ui_object *textbox)
+void gain_focus(struct ui_object *textbox)
 {
 	struct evtbox_args args = { .textbox = textbox };
 	evt_fire(&textbox->data->textbox.box.events.focused, &args);

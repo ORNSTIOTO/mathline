@@ -176,6 +176,7 @@ static void callback_sk7(void *a)
 static void fbox_cat(char c)
 {
 	textbox_write(formula, c);
+	gain_focus(formula);
 }
 
 static void callback_lb(void *a)

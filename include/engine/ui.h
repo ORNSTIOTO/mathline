@@ -209,6 +209,8 @@ void ui_set_fonttype(struct ui_object *obj, enum ui_font_type ft,
 		     float fntsize);
 void ui_set_image(struct ui_object *obj, const char *filename);
 
+void gain_focus(struct ui_object *textbox);
+
 void ui_use_font(const char *fntname);
 
 struct ui_res ui_create_ext(enum ui_class class, const char *name,

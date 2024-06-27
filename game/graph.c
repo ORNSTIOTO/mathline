@@ -345,6 +345,8 @@ static float calc_func(struct node *node, float x)
 		return sinf(v);
 	if (strcmp(node->tok.fname, "abs") == 0)
 		return fabsf(x);
+	if (strcmp(node->tok.fname, "tan") == 0)
+		return tanf(x);
 
 	return 0;
 }
