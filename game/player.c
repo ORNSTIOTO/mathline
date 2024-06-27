@@ -96,20 +96,25 @@ static _Bool player_collides_with_obstacle(struct obstacle ob, Vector2 *point)
 	return 0;
 }
 
-_Bool player_collides(Vector2 *point)
+_Bool player_collides(Vector2 *point, int id)
 {
-	if (player_collides_with_graph(point))
-		return 1;
+	//int frames = (int)arraylist_count(&game.level.obstacles)+1;
 
+	if (player_collides_with_graph(point) && id == 0) {
+		coll_frame++;
+		return 1;
+	}
+	
 	/*
 	// check direct collisions against all graphs
 	for (int i = 0; i < game.ngraphs; ++i) {
 		if (player_collides_with_graph(game.graphs[i], point)) return 1;
 	}*/
 	for (size_t i = 0; i < arraylist_count(&game.level.obstacles); ++i) {
-		struct obstacle *ob = arraylist_get(&game.level.obstacles, i);
-		if (player_collides_with_obstacle(*ob, point))
+		struct obstacle *ob = arraylist_get(&game.level.obstacles, id+1==(int)i);
+		if (player_collides_with_obstacle(*ob, point)) {
 			return 1;
+		}
 	}
 	return 0;
 }

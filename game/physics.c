@@ -1,4 +1,5 @@
 #include "engine/physics.h"
+#include "engine/arraylist.h"
 #include "game.h"
 #include "player.h"
 #include <math.h>
@@ -10,7 +11,7 @@ extern struct game game;
 
 #define PHYSICS_G 130.0F
 #define BOUNCE 0.1F
-#define FF 0.98F // friction factor or smth
+#define FF 0.99F // friction factor or smth
 
 #define V2right (Vector2){1, 0}
 
@@ -59,10 +60,29 @@ static void player_update(const float fdt)
 	player->body.friction = (Vector2){ 0, 0 };
 	
 	Vector2 coll;
-	if (player_collides(&coll)) {
-		player->body.collision = coll;
+	int collides = 0;
+	for (int c = 0; c < (int)arraylist_count(&game.level.obstacles)+1;c++) {
+	if (player_collides(&coll, c)) {
 		player->body.on_ground++;
-	
+		resolve_collision(coll);
+		collides += 1;
+	} else {
+		
+	}
+	}
+	if (!collides){
+	player->body.on_ground = 0;}
+	//player->body.debug = Vector2Scale(player->body.coll_nor, 10);
+	player->old_pos = player->pos;
+}
+
+void resolve_collision(Vector2 coll)
+{
+	struct player *player = game.player;
+
+	player->body.collision = coll;
+		
+	printf("co: %i\n",player->body.on_ground);
 		const Vector2 hit_distance = { player->pos.x - coll.x,
 					       player->pos.y - coll.y };
 
@@ -141,12 +161,7 @@ static void player_update(const float fdt)
 
 		//player->body.debug = Vector2Scale(Vector2Subtract(Vector2Scale(Vector2Normalize(hit_distance), player->radius), hit_distance),100);
 		player->body.debug = Vector2Scale(player->body.coll_nor, 100);
-
-	} else {
-		player->body.on_ground = 0;
-	}
-	//player->body.debug = Vector2Scale(player->body.coll_nor, 10);
-	player->old_pos = player->pos;
+		//player->body.angular_velocity /= 10;
 }
 
 void physics_update(float fdt)
