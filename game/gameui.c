@@ -19,6 +19,8 @@ struct ui_object *levelui;
 struct ui_object *skinsui;
 struct ui_object *victoryui;
 
+struct ui_object *formula;
+
 struct ui_object *skin_btn_selected = NULL;
 
 Texture2D skins[7];
@@ -169,6 +171,51 @@ static void callback_sk7(void *a)
 {
 	struct evtbtn_args *args = a;
 	set_skin(args->button, "seal");
+}
+
+static void fbox_cat(char c)
+{
+	textbox_write(formula, c);
+}
+
+static void callback_lb(void *a)
+{
+	fbox_cat('(');
+}
+
+static void callback_rb(void *a)
+{
+	fbox_cat(')');
+}
+
+static void callback_pow(void *a)
+{
+	fbox_cat('^');
+}
+
+static void callback_mul(void *a)
+{
+	fbox_cat('*');
+}
+
+static void callback_div(void *a)
+{
+	fbox_cat('/');
+}
+
+static void callback_add(void *a)
+{
+	fbox_cat('+');
+}
+
+static void callback_sub(void *a)
+{
+	fbox_cat('-');
+}
+
+static void callback_x(void *a)
+{
+	fbox_cat('x');
 }
 
 static void load_skinsui(void)
@@ -409,7 +456,7 @@ static void load_levelui(void)
 	ui_set_text(fxlb, "f(x) =");
 	ui_set_fonttype(fxlb, UIF_CRAYON, 30);
 
-	struct ui_object *formula =
+	formula =
 		ui_create(UIC_TEXTBOX, "formula", input).object;
 	formula->data->transparency = 1;
 	formula->data->position = (UDim2){ { 0, 7 }, { 1, 0 } };
@@ -446,6 +493,7 @@ static void load_levelui(void)
 	right_bracket->data->position = (UDim2){ { -80, 45 }, { 1, 0 } };
 	right_bracket->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(right_bracket, "res/img/ui/calc_button.png");
+	evt_connect(&right_bracket->data->imagebutton.btn.events.clicked, callback_rb);
 
 	struct ui_object *right_bracket_l =
 		ui_create(UIC_LABEL, "right_bracket_l", right_bracket).object;
@@ -463,6 +511,7 @@ static void load_levelui(void)
 	left_bracket->data->position = (UDim2){ { -150, 45 }, { 1, 0 } };
 	left_bracket->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(left_bracket, "res/img/ui/calc_button.png");
+	evt_connect(&left_bracket->data->imagebutton.btn.events.clicked, callback_lb);
 
 	struct ui_object *left_bracket_l =
 		ui_create(UIC_LABEL, "left_bracket_l", left_bracket).object;
@@ -480,6 +529,7 @@ static void load_levelui(void)
 	power->data->position = (UDim2){ { -220, 45 }, { 1, 0 } };
 	power->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(power, "res/img/ui/calc_button.png");
+	evt_connect(&power->data->imagebutton.btn.events.clicked, callback_pow);
 
 	struct ui_object *power_l =
 		ui_create(UIC_LABEL, "power_l", power).object;
@@ -497,6 +547,7 @@ static void load_levelui(void)
 	divide->data->position = (UDim2){ { -10, 115 }, { 1, 0 } };
 	divide->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(divide, "res/img/ui/calc_button.png");
+	evt_connect(&divide->data->imagebutton.btn.events.clicked, callback_div);
 
 	struct ui_object *divide_l_fnsdjfn =
 		ui_create(UIC_LABEL, "divide_l", divide).object;
@@ -514,6 +565,7 @@ static void load_levelui(void)
 	multiplicate->data->position = (UDim2){ { -80, 115 }, { 1, 0 } };
 	multiplicate->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(multiplicate, "res/img/ui/calc_button.png");
+	evt_connect(&multiplicate->data->imagebutton.btn.events.clicked, callback_mul);
 
 	struct ui_object *multiplicate_l =
 		ui_create(UIC_LABEL, "multiplicate_l", multiplicate).object;
@@ -531,6 +583,7 @@ static void load_levelui(void)
 	substract->data->position = (UDim2){ { -150, 115 }, { 1, 0 } };
 	substract->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(substract, "res/img/ui/calc_button.png");
+	evt_connect(&substract->data->imagebutton.btn.events.clicked, callback_sub);
 
 	struct ui_object *substract_l =
 		ui_create(UIC_LABEL, "substract_l", substract).object;
@@ -548,6 +601,7 @@ static void load_levelui(void)
 	add->data->position = (UDim2){ { -220, 115 }, { 1, 0 } };
 	add->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(add, "res/img/ui/calc_button.png");
+	evt_connect(&add->data->imagebutton.btn.events.clicked, callback_add);
 
 	struct ui_object *add_l = ui_create(UIC_LABEL, "add_l", add).object;
 	add_l->data->transparency = 1;
@@ -563,6 +617,7 @@ static void load_levelui(void)
 	x->data->position = (UDim2){ { -10, 45 }, { 1, 0 } };
 	x->data->size = (UDim2){ { 60, 60 }, { 0, 0 } };
 	ui_set_image(x, "res/img/ui/calc_x_button.png");
+	evt_connect(&x->data->imagebutton.btn.events.clicked, callback_x);
 
 	struct ui_object *x_l = ui_create(UIC_LABEL, "x_l", x).object;
 	x_l->data->transparency = 1;
@@ -613,7 +668,6 @@ void show_mainmenu(void)
 	mainmenu->data->visible = 1;
 	levelui->data->visible = 0;
 	skinsui->data->visible = 0;
-	
 }
 
 void show_levelui(void)

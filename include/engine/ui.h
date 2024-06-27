@@ -228,4 +228,6 @@ void redraw_ui(void);
 
 void ui_init(void);
 
+void textbox_write(struct ui_object *textbox, char c);
+
 #endif

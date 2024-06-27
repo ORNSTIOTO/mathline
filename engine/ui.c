@@ -1049,7 +1049,7 @@ static void text_erase(struct ui_text *text, size_t at)
 	text->size--;
 }
 
-static void textbox_write(struct ui_object *textbox, char c)
+void textbox_write(struct ui_object *textbox, char c)
 {
 	struct uie_textbox *tbox = &textbox->data->textbox;
 	struct ui_text *text = &tbox->text;
