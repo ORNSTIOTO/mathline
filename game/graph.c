@@ -432,7 +432,7 @@ void render_graph(void)
 	if (vpoints == NULL)
 		return;
 
-	const float width = 20;
+	const float width = 5;
 
 	_Bool tangent_set = 0;
 	Vector2 prev = vpoints[0];
