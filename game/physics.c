@@ -70,6 +70,9 @@ static void player_update(const float fdt)
 		
 	}
 	}
+	if(collides >1) {
+		player->body.linear_velocity = Vector2Scale(player->body.linear_velocity, 0.5f);
+	}
 	if (!collides){
 	player->body.on_ground = 0;}
 	//player->body.debug = Vector2Scale(player->body.coll_nor, 10);
@@ -160,7 +163,7 @@ void resolve_collision(Vector2 coll)
 		//player->body.friction = Vector2DotProduct(player->body.linear_velocity, Vector2Rotate(coll, 90));
 
 		//player->body.debug = Vector2Scale(Vector2Subtract(Vector2Scale(Vector2Normalize(hit_distance), player->radius), hit_distance),100);
-		player->body.debug = Vector2Scale(player->body.coll_nor, 100);
+		//player->body.debug = Vector2Scale(player->body.coll_nor, 100);
 		//player->body.angular_velocity /= 10;
 }
 

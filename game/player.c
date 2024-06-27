@@ -15,7 +15,7 @@ extern struct game game;
 
 static struct player player = { 0 };
 
-static _Bool player_contained(Vector2 p, float *distance)
+static _Bool player_contained(Vector2 p, float *distance, float radius)
 {
 	//printf("p { %f, %f }\n", p.x, p.y);
 	const Vector2 v = { player.pos.x - p.x, player.pos.y - p.y };
@@ -23,7 +23,7 @@ static _Bool player_contained(Vector2 p, float *distance)
 		*distance = Vector2Length(v);
 	}
 
-	return Vector2Length(v) <= player.radius;
+	return Vector2Length(v) <= player.radius+radius;
 }
 
 static _Bool player_collides_with_graph(Vector2 *point)
@@ -31,12 +31,13 @@ static _Bool player_collides_with_graph(Vector2 *point)
 	// TODO fix this mess later
 
 	const int precision = 10;
+	const int width = 7;
 
 	float old_dist = INFINITY;
 	float dist;
 
 	size_t points = arraylist_count(&game.graph_points);
-	printf("points %i\n", points);
+	//printf("points %i\n", points);
 	for (size_t i = 0; i < points; ++i) {
 		//	const float x = (float)i - (float)points / 2;
 		//	const float *y = arraylist_get(&game.graph_points, i);
@@ -50,12 +51,16 @@ static _Bool player_collides_with_graph(Vector2 *point)
 
 		Vector2 e = *p;
 		e.y *= -1;
+		Vector2 distance = Vector2Subtract(player.pos, e);
 
-		if (player_contained(e, &dist)) {
+		if (player_contained(e, &dist, width)) {
+			//dist = Vector2Length(Vector2Subtract(player.pos, Vector2Add(e, Vector2Scale(Vector2Normalize(distance), width))));
 			if (dist < old_dist) {
 				old_dist = dist;
-				point->x = e.x;
-				point->y = e.y;
+				*point = Vector2Add(e, Vector2Scale(Vector2Normalize(distance), width));
+				player.body.debug = *point;
+				//point->x = e.x;
+				//point->y = e.y;
 			}
 
 			//return 1;
@@ -101,7 +106,7 @@ _Bool player_collides(Vector2 *point, int id)
 	//int frames = (int)arraylist_count(&game.level.obstacles)+1;
 
 	if (player_collides_with_graph(point) && id == 0) {
-		//coll_frame++;
+
 		return 1;
 	}
 	
@@ -111,8 +116,8 @@ _Bool player_collides(Vector2 *point, int id)
 		if (player_collides_with_graph(game.graphs[i], point)) return 1;
 	}*/
 	for (size_t i = 0; i < arraylist_count(&game.level.obstacles); ++i) {
-		struct obstacle *ob = arraylist_get(&game.level.obstacles, id+1==(int)i);
-		if (player_collides_with_obstacle(*ob, point)) {
+		struct obstacle *ob = arraylist_get(&game.level.obstacles, i);
+		if (player_collides_with_obstacle(*ob, point) && id-1==(int)i) {
 			return 1;
 		}
 	}
@@ -121,7 +126,7 @@ _Bool player_collides(Vector2 *point, int id)
 
 _Bool player_collides_with(Vector2 p)
 {
-	return player_contained(p, NULL);
+	return player_contained(p, NULL, 0);
 }
 
 void player_init(void)
