@@ -3,3 +3,4 @@ game/obj/
 bin/
 
 *.o
+/export

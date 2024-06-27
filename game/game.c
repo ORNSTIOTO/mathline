@@ -75,6 +75,9 @@ static void keyboard_debug(int c)
 	case 'r':
 		reload_level();
 		break;
+	case 'f':
+		ToggleFullscreen();
+		break;
 	default:
 		break;
 	}

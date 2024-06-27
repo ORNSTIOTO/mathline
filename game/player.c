@@ -101,7 +101,7 @@ _Bool player_collides(Vector2 *point, int id)
 	//int frames = (int)arraylist_count(&game.level.obstacles)+1;
 
 	if (player_collides_with_graph(point) && id == 0) {
-		coll_frame++;
+		//coll_frame++;
 		return 1;
 	}
 	

@@ -246,7 +246,7 @@ static struct node *parse_primary(struct parser *par)
 		return node;
 	}
 
-	struct tok prev = parser_peek(par, -1);
+	struct tok prev = par->i == 1 ? (struct tok){ .op = TT_OP } : parser_peek(par, -1);
 	const _Bool negative = prev.type == TT_OP && tok.type == TT_OP &&
 			       tok.op == '-' &&
 			       (next.type == TT_NUM || next.type == TT_X);
@@ -256,17 +256,17 @@ static struct node *parse_primary(struct parser *par)
 		next = parser_peek(par, 1);
 	}
 
-	if (next.type != TT_X) {
-		struct node *node = newnode(tok);
-		node->negative = negative;
-		return node;
+	if (next.type == TT_X) {
+		struct node *mul = newnode((struct tok){ .type = TT_OP, .op = '*' });
+		mul->left = newnode(tok);
+		mul->left->negative = negative;
+		mul->right = newnode(parser_advance(par));
+		return mul;
 	}
 
-	struct node *mul = newnode((struct tok){ .type = TT_OP, .op = '*' });
-	mul->left = newnode(tok);
-	mul->left->negative = negative;
-	mul->right = newnode(parser_advance(par));
-	return mul;
+	struct node *node = newnode(tok);
+	node->negative = negative;
+	return node;
 }
 
 struct node *parse_expr(struct parser *par, enum prec min_prec)
@@ -318,8 +318,8 @@ static void view_toklist(struct arraylist *toks)
 
 static void rview_nodes(struct node *node, size_t depth)
 {
-	printf("([%lu] %d, %f (%c))", depth, node->tok.type, node->tok.num,
-	       node->tok.op);
+	printf("([%lu] %d, %f (%c), neg: %d)", depth, node->tok.type, node->tok.num,
+	       node->tok.op, node->negative);
 	if (node->left != NULL && node->right != NULL) {
 		printf("{ L: ");
 		rview_nodes(node->left, depth + 1);
@@ -351,7 +351,12 @@ static float calc_func(struct node *node, float x)
 
 static float calculate_for_x(struct node *node, float x)
 {
+	if (node == NULL)
+		return -x;
+
 	const struct tok tok = node->tok;
+
+	//printf("nt: %d, x: %f\n", node->tok.type, x);
 
 	switch (node->tok.type) {
 	case TT_OP: {
@@ -402,10 +407,10 @@ static struct arraylist gen_gpoints(struct node *ast)
 void build_fgraph(const char *expr)
 {
 	struct arraylist tokens = lex(expr);
-	//view_toklist(&tokens);
+	view_toklist(&tokens);
 
 	struct node *ast = parse(tokens);
-	//view_nodes(ast);
+	view_nodes(ast);
 
 	//const float x = 5;
 	//const float y = calculate_for_x(ast, x);
@@ -432,7 +437,7 @@ void render_graph(void)
 	if (vpoints == NULL)
 		return;
 
-	const float width = 20;
+	const float width = 5;
 
 	_Bool tangent_set = 0;
 	Vector2 prev = vpoints[0];

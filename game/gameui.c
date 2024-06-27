@@ -17,6 +17,7 @@ struct ui_object *screenmenu;
 struct ui_object *mainmenu;
 struct ui_object *levelui;
 struct ui_object *skinsui;
+struct ui_object *victoryui;
 
 struct ui_object *skin_btn_selected = NULL;
 
@@ -57,12 +58,13 @@ static void callback_show_levelui(void *a)
 
 	show_mainmenu();
 }
+
 static void callback_lvback(void *a)
 {
 	if (!levelui->data->visible)
 		return;
 
-	level_finish();
+	victoryui->data->visible = 0;
 	show_mainmenu();
 }
 
@@ -569,9 +571,24 @@ static void load_levelui(void)
 	x_l->data->label.text.color = WHITE;
 	ui_set_text(x_l, "x");
 	ui_set_fonttype(x_l, UIF_CRAYON, 50);
-
 	
 	levelui = canvas;
+}
+
+void load_victoryui(void)
+{
+	victoryui = ui_create(UIC_FRAME, "victoryui", levelui).object;
+	victoryui->data->transparency = 1;
+	victoryui->data->size = (UDim2){ { 0, 0 }, { 1, 1 } };
+	victoryui->data->visible = 0;
+	struct ui_object *win = ui_create(UIC_LABEL, "winlabel", victoryui).object;
+	win->data->transparency = 1;
+	win->data->anchor = (Vector2){ 0.5F, 0.5F };
+	win->data->position = (UDim2){ {0, 0}, {0.5F, 0.5F} };
+	win->data->size = (UDim2){ { 300, 60 }, { 0, 0 } };
+	win->data->label.text.color = WHITE;
+	ui_set_text(win, "You won!");
+	ui_set_fonttype(win, UIF_CRAYON, 60);
 }
 
 void load_gameui(void)
@@ -580,6 +597,7 @@ void load_gameui(void)
 	load_mainmenu();
 	load_levelui();
 	load_skinsui();
+	load_victoryui();
 }
 
 void show_mainmenu(void)
@@ -588,6 +606,7 @@ void show_mainmenu(void)
 	mainmenu->data->visible = 1;
 	levelui->data->visible = 0;
 	skinsui->data->visible = 0;
+	
 }
 
 void show_levelui(void)
@@ -596,6 +615,7 @@ void show_levelui(void)
 	mainmenu->data->visible = 0;
 	levelui->data->visible = 1;
 	skinsui->data->visible = 0;
+	victoryui->data->visible = 0;
 }
 
 void show_screenmenu(void)
@@ -612,4 +632,9 @@ void show_skinsui(void)
 	mainmenu->data->visible = 0;
 	levelui->data->visible = 0;
 	skinsui->data->visible = 1;
+}
+
+void show_victoryui(void)
+{
+	victoryui->data->visible = 1;
 }

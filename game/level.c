@@ -4,6 +4,7 @@
 #include "graph.h"
 #include "engine/physics.h"
 #include "engine/render.h"
+#include "gameui.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -68,6 +69,8 @@ _Bool level_star_collected(void)
 
 void level_finish(void)
 {
+	physics_pause();
+	show_victoryui();
 }
 
 struct lpar {

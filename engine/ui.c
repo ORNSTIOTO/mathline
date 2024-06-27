@@ -748,6 +748,22 @@ ret_newline: // Return point from goto
 	arraylist_destroy(&codepoints);
 }
 
+/*check if ui element is visible depending on its ancestors*/
+static _Bool ui_visible(const struct ui_object *obj)
+{
+	struct ui_object ins = *obj;
+	// TODO might be dangerous
+	while (1) {
+		if (!ins.data->visible) {
+			return 0;
+		}
+		if (ins.parent == NULL) {
+			return 1;
+		}
+		ins = *ins.parent;
+	}
+}
+
 static void draw_image(const struct ui_image *img, Vector2 pos, Vector2 size,
 		       float transparency)
 {
@@ -828,6 +844,9 @@ static void ui_draw_tree(const struct ui_object *obj,
 	if (!obj->data->visible)
 		return;
 
+	if (!ui_visible(obj))
+		return;
+
 	if (parent != NULL && !obj->data->hidden) {
 		recalculate_absolute_position(obj->data, parent);
 		recalculate_absolute_size(obj->data, parent);
@@ -849,22 +868,6 @@ void redraw_ui(void)
 	root->data->size.offset = root->data->_abs_size = get_screen_dim();
 
 	ui_draw_tree(root, NULL);
-}
-
-/*check if ui element is visible depending on its ancestors*/
-static _Bool ui_visible(const struct ui_object *obj)
-{
-	struct ui_object ins = *obj;
-	// TODO might be dangerous
-	while (1) {
-		if (!ins.data->visible) {
-			return 0;
-		}
-		if (ins.parent == NULL) {
-			return 1;
-		}
-		ins = *ins.parent;
-	}
 }
 
 static _Bool contained_within(Vector2 point, Vector2 pos, Vector2 size)

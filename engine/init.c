@@ -5,7 +5,7 @@
 #include <malloc.h>
 #include <raylib.h>
 
-#define USE_MAXIMIZED_WINDOW 0
+#define USE_MAXIMIZED_WINDOW 1
 
 struct window window = { 0 };
 

@@ -49,9 +49,17 @@ static void render_obstacle(struct obstacle *obstacle)
 
 static void render_obstacles(void)
 {
+	if (rctx.leveldata == NULL)
+		return;
+
 	const struct arraylist *obstacles = &rctx.leveldata->obstacles;
-	for (size_t i = 0; i < arraylist_count(obstacles); ++i)
+	if (obstacles->data == NULL)
+		return;
+
+	for (size_t i = 0; i < arraylist_count(obstacles); ++i) {
+		struct obstacle *o = arraylist_get(obstacles, i);
 		render_obstacle(arraylist_get(obstacles, i));
+	}
 }
 
 static void render_destination(void)
