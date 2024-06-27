@@ -98,16 +98,16 @@ static void handle_input(void)
 	ui_resolve_mouse();
 
 	// dragging
-	if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && (mdx != 0 || mdy != 0)) {
-		game.camera.target.x -= mdx / game.camera.zoom;
-		game.camera.target.y -= mdy / game.camera.zoom;
-	}
+	// if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && (mdx != 0 || mdy != 0)) {
+	// 	game.camera.target.x -= mdx / game.camera.zoom;
+	// 	game.camera.target.y -= mdy / game.camera.zoom;
+	// }
 
 	// FIXME debug moving
-	if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON) && (mdx != 0 || mdy != 0)) {
-		game.player->pos.x += mdx;
-		game.player->pos.y += mdy;
-	}
+	// if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON) && (mdx != 0 || mdy != 0)) {
+	// 	game.player->pos.x += mdx;
+	// 	game.player->pos.y += mdy;
+	// }
 	// FIXME debug moving
 	if (IsMouseButtonDown(MOUSE_MIDDLE_BUTTON) && (mdx != 0 || mdy != 0)) {
 		game.player->body.linear_velocity.x += mdx;

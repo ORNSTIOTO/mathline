@@ -385,7 +385,7 @@ static void load_mainmenu(void)
 	bckg->data->size = (UDim2){ { 0, 0 }, { 1, 1 } };
 	ui_set_image(bckg, "res/img/ui/background_lvl.png");
 
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 8; ++i) {
 		char name[16];
 		snprintf(name, 16, "%d:%d", i + 1, i * 11);
 
