@@ -1,16 +1,21 @@
 #include "graph.h"
 #include "game.h"
 #include "engine/arraylist.h"
+#include "engine/tex.h"
 #include <malloc.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <raymath.h>
+#include <rlgl.h>
 
 // https://github.com/raysan5/raylib/blob/f05316b11d0a1b17088e3e75e4682e2e7ce54b91/examples/textures/textures_polygon.c#L114
 // DrawTexturePoly() - Could help drawing the graph texture.
 
 extern struct game game;
+
+Texture2D graphtex;
 
 static float scr_border_left(void)
 {
@@ -423,13 +428,70 @@ void render_graph(void)
 {
 	struct arraylist *points = &game.graph_points;
 
-	Vector2 *prev = arraylist_get(points, 0);
+	const Vector2 *vpoints = points->data;
+	if (vpoints == NULL)
+		return;
+
+	const float width = 20;
+
+	_Bool tangent_set = 0;
+	Vector2 prev = vpoints[0];
+	Vector2 prev_tan = { 0 };
+	float prev_v = 0;
 
 	for (size_t i = 1; i < arraylist_count(points); ++i) {
-		const Vector2 *p = arraylist_get(points, i);
-		draw_line(*prev, *p, RED);
+		Vector2 point = vpoints[i];
+		point.y = -point.y;
 
-		*prev = *p;
+		// Vector from previous to current
+		Vector2 delta = { point.x - prev.x, point.y - prev.y };
+
+		// The right hand normal to the delta vector
+		Vector2 normal =
+			Vector2Normalize((Vector2){ -delta.y, delta.x });
+
+		// The v texture coordinate of the segment (add up the length of all the segments so far)
+		const float v = prev_v + Vector2Length(delta);
+
+		// Make sure the start point has a normal
+		if (!tangent_set) {
+			prev_tan = normal;
+			tangent_set = 1;
+		}
+
+		// Extend out the normals from the previous and current points to get the quad for this segment
+		Vector2 prevPosNormal =
+			Vector2Add(prev, Vector2Scale(prev_tan, width));
+		Vector2 prevNegNormal =
+			Vector2Add(prev, Vector2Scale(prev_tan, -width));
+
+		Vector2 currentPosNormal =
+			Vector2Add(point, Vector2Scale(normal, width));
+		Vector2 currentNegNormal =
+			Vector2Add(point, Vector2Scale(normal, -width));
+
+		// Draw the segment as a quad
+		rlSetTexture(graphtex.id);
+		rlBegin(RL_QUADS);
+		rlColor4ub(255, 255, 255, 255);
+		rlNormal3f(0.0F, 0.0F, 1.0F);
+
+		rlTexCoord2f(0, prev_v);
+		rlVertex2f(prevNegNormal.x, prevNegNormal.y);
+
+		rlTexCoord2f(1, prev_v);
+		rlVertex2f(prevPosNormal.x, prevPosNormal.y);
+
+		rlTexCoord2f(1, v);
+		rlVertex2f(currentPosNormal.x, currentPosNormal.y);
+
+		rlTexCoord2f(0, v);
+		rlVertex2f(currentNegNormal.x, currentNegNormal.y);
+		rlEnd();
+
+		prev = point;
+		prev_v = v;
+		prev_tan = normal;
 	}
 }
 
@@ -461,4 +523,10 @@ void render_fgraph_old(float (*f)(float x), Color color)
 		prev.x = cx;
 		prev.y = cy;
 	}
+}
+
+void graph_init(void)
+{
+	texture_load(&graphtex, "res/img/graphline.png");
+	SetTextureFilter(graphtex, TEXTURE_FILTER_BILINEAR);
 }

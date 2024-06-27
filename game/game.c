@@ -49,6 +49,7 @@ void game_init(struct window *window)
 
 	setup_camera();
 	physics_init();
+	graph_init();
 	render_init();
 	player_init();
 	ui_init();
