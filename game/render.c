@@ -26,6 +26,7 @@ void render_init(void)
 {
 	rctx.graph_color = RED;
 	rctx.leveldata = malloc(sizeof *rctx.leveldata);
+	arraylist_clear(&rctx.leveldata->obstacles);
 
 	game.ngraphs = 1;
 	game.graphs = malloc(game.ngraphs * sizeof(graph_t));
