@@ -1,4 +1,5 @@
 #include "level.h"
+#include "engine/arraylist.h"
 #include "game.h"
 #include "player.h"
 #include "graph.h"
@@ -97,11 +98,13 @@ static enum levelfile_idx lfidx_from_name(const char *name)
 
 static char raw_advance(struct lpar *lpar)
 {
+	if (lpar->idx > strlen(lpar->file)) return 0;
 	return lpar->file[lpar->idx++];
 }
 
 static char raw_peek(struct lpar *lpar)
 {
+	if (lpar->idx > strlen(lpar->file)) return 0;
 	return lpar->file[lpar->idx];
 }
 
@@ -123,9 +126,10 @@ static char peek(struct lpar *lpar)
 	return raw_peek(lpar);
 }
 
+/* Reads keyword. e.g. a, b, star */
 static enum levelfile_idx read_name(struct lpar *lpar)
 {
-	char buf[16];
+	char buf[16] = "";
 	size_t i = 0;
 
 	for (;;) {
@@ -137,7 +141,6 @@ static enum levelfile_idx read_name(struct lpar *lpar)
 		buf[i++] = c;
 	}
 
-	buf[i] = 0;
 
 	return lfidx_from_name(buf);
 }
@@ -160,7 +163,7 @@ static void read_until(struct lpar *lpar, char until, char *buf)
 
 static float read_number(struct lpar *lpar)
 {
-	char buf[16];
+	char buf[16] = "";
 	size_t i = 0;
 
 	skip_spaces(lpar);
@@ -174,7 +177,6 @@ static float read_number(struct lpar *lpar)
 		buf[i++] = c;
 	}
 
-	buf[i] = 0;
 
 	return (float)atof(buf);
 }
@@ -275,9 +277,10 @@ static int load_level_file(const char *filename)
 				   sizeof(struct obstacle), 8, 1), },
 	};
 
-	for (size_t i = 0; i < 5; ++i)
+	while (lpar.idx < strlen(lpar.file)) {
 		read_pair(&lpar);
-
+	}
+	
 	load_level(lpar.ldata);
 
 	return 0;

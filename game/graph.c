@@ -72,7 +72,7 @@ struct lexer {
 
 static enum toktype tt_from_char(char c)
 {
-	return c >= '0' && c <= '9' || c == '.' ? TT_NUM :
+	return (c >= '0' && c <= '9') || c == '.' ? TT_NUM :
 	       c == 'x'		    ? TT_X :
 	       c >= 'a' && c <= 'z' ? TT_FUNC :
 	       c == '+' || c == '-' || c == '*' || c == '/' || c == '^' ?
@@ -246,7 +246,7 @@ static struct node *parse_primary(struct parser *par)
 		return node;
 	}
 
-	struct tok prev = par->i == 1 ? (struct tok){ .op = TT_OP } : parser_peek(par, -1);
+	struct tok prev = par->i == 1 ? (struct tok){ .type = TT_OP, .op = '-' } : parser_peek(par, -1);
 	const _Bool negative = prev.type == TT_OP && tok.type == TT_OP &&
 			       tok.op == '-' &&
 			       (next.type == TT_NUM || next.type == TT_X);
@@ -428,6 +428,7 @@ void build_fgraph(const char *expr)
 	game.graph_points = gen_gpoints(ast);
 }
 
+// no longer used
 static void draw_line(Vector2 a, Vector2 b, Color c)
 {
 	a.y = -a.y;
@@ -506,6 +507,7 @@ void render_graph(void)
 	}
 }
 
+// no longer used
 void render_fgraph_old(float (*f)(float x), Color color)
 {
 	const float bl = scr_border_left();
