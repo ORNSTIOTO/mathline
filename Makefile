@@ -22,12 +22,14 @@ CFLAGS+=-I$(IDIR)/
 CFLAGS+=-std=gnu2x -Wall -Wextra -ggdb
 CFLAGS+=-O3
 
+LDFLAGS+=-mwindows
+
 LIBS:=-lraylib -lm
 
 export RDIR IDIR ODIR CC CFLAGS INCLUDES
 
 $(BIN): all | $(BINPATH)
-	$(CC) -o $@ $(EOBJS) $(GOBJS) $(LIBS)
+	$(CC) -o $@ $(EOBJS) $(GOBJS) $(LIBS) $(LDFLAGS)
 
 all:
 	$(MAKE) -C engine -f engine.mk

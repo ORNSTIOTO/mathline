@@ -85,7 +85,7 @@ void resolve_collision(Vector2 coll)
 
 	player->body.collision = coll;
 		
-	printf("co: %i\n",player->body.on_ground);
+	//printf("co: %i\n",player->body.on_ground);
 		const Vector2 hit_distance = { player->pos.x - coll.x,
 					       player->pos.y - coll.y };
 

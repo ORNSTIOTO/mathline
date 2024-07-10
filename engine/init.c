@@ -11,6 +11,7 @@ struct window window = { 0 };
 
 static void wnd_init(void)
 {
+	SetTraceLogLevel(LOG_ERROR);
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE | USE_MAXIMIZED_WINDOW ?
 			       FLAG_WINDOW_MAXIMIZED :
 			       0);

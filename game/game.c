@@ -109,10 +109,10 @@ static void handle_input(void)
 	// 	game.player->pos.y += mdy;
 	// }
 	// FIXME debug moving
-	if (IsMouseButtonDown(MOUSE_MIDDLE_BUTTON) && (mdx != 0 || mdy != 0)) {
-		game.player->body.linear_velocity.x += mdx;
-		game.player->body.linear_velocity.y += mdy;
-	}
+	// if (IsMouseButtonDown(MOUSE_MIDDLE_BUTTON) && (mdx != 0 || mdy != 0)) {
+	// 	game.player->body.linear_velocity.x += mdx;
+	// 	game.player->body.linear_velocity.y += mdy;
+	// }
 
 	// zooming
 	// const float scroll = GetMouseWheelMove();
