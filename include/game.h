@@ -10,6 +10,7 @@ typedef float (*graph_t)(float);
 
 struct game {
 	struct window *window;
+	struct arraylist tweens;
 	struct Camera2D camera;
 	struct player *player;
 	graph_t *graphs;

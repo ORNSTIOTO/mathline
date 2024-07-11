@@ -1,5 +1,6 @@
 #include "game.h"
 #include "engine/tex.h"
+#include "engine/tween.h"
 #include "level.h"
 #include "player.h"
 #include "gameconfig.h"
@@ -48,6 +49,7 @@ void game_init(struct window *window)
 	strcpy(game.tip, "press P to pause\npress R to restart");
 
 	setup_camera();
+	tween_init();
 	physics_init();
 	graph_init();
 	render_init();
@@ -78,6 +80,13 @@ static void keyboard_debug(int c)
 	case 'f':
 		ToggleFullscreen();
 		break;
+	case 'q':
+		add_tween((struct tween){
+			.t_type = EASE_IN_OUT,
+			.var = &game.player->pos.x,
+			.to = -100.0F,
+			.duration = 5});
+		break;
 	default:
 		break;
 	}
@@ -98,33 +107,33 @@ static void handle_input(void)
 	ui_resolve_mouse();
 
 	// dragging
-	// if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && (mdx != 0 || mdy != 0)) {
-	// 	game.camera.target.x -= mdx / game.camera.zoom;
-	// 	game.camera.target.y -= mdy / game.camera.zoom;
-	// }
+	if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && (mdx != 0 || mdy != 0)) {
+		game.camera.target.x -= mdx / game.camera.zoom;
+		game.camera.target.y -= mdy / game.camera.zoom;
+	}
 
 	// FIXME debug moving
-	// if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON) && (mdx != 0 || mdy != 0)) {
-	// 	game.player->pos.x += mdx;
-	// 	game.player->pos.y += mdy;
-	// }
+	if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON) && (mdx != 0 || mdy != 0)) {
+		game.player->pos.x += mdx;
+		game.player->pos.y += mdy;
+	}
 	// FIXME debug moving
-	// if (IsMouseButtonDown(MOUSE_MIDDLE_BUTTON) && (mdx != 0 || mdy != 0)) {
-	// 	game.player->body.linear_velocity.x += mdx;
-	// 	game.player->body.linear_velocity.y += mdy;
-	// }
+	if (IsMouseButtonDown(MOUSE_MIDDLE_BUTTON) && (mdx != 0 || mdy != 0)) {
+		game.player->body.linear_velocity.x += mdx;
+		game.player->body.linear_velocity.y += mdy;
+	}
 
 	// zooming
-	// const float scroll = GetMouseWheelMove();
-	// if (scroll > 0) {
-	// 	zoom.from = game.camera.zoom;
-	// 	zoom.to = zoom.from * (1.0F + ZOOM_DELTA);
-	// 	zoom.lerp = 0;
-	// } else if (scroll < 0) {
-	// 	zoom.from = game.camera.zoom;
-	// 	zoom.to = zoom.from * (1.0F - ZOOM_DELTA);
-	// 	zoom.lerp = 0;
-	// }
+	const float scroll = GetMouseWheelMove();
+	if (scroll > 0) {
+		zoom.from = game.camera.zoom;
+		zoom.to = zoom.from * (1.0F + ZOOM_DELTA);
+		zoom.lerp = 0;
+	} else if (scroll < 0) {
+		zoom.from = game.camera.zoom;
+		zoom.to = zoom.from * (1.0F - ZOOM_DELTA);
+		zoom.lerp = 0;
+	}
 }
 
 static void lerp_camera_zoom(float dt)
@@ -165,6 +174,8 @@ static void window_update(void)
 void fixed_update(float fdt)
 {
 	window_update();
+
+	tween_update(fdt);
 	//if (IsKeyDown(KEY_F)) {
 	physics_update(fdt);
 	//}
