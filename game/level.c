@@ -1,5 +1,6 @@
 #include "level.h"
 #include "engine/arraylist.h"
+#include "engine/tween.h"
 #include "game.h"
 #include "player.h"
 #include "graph.h"
@@ -38,13 +39,12 @@ static void dest_collision(void)
 static void load_level(struct leveldata ldata)
 {
 	//data = ldata;
-	game.level = ldata;
+	game.level = ldata; // old render_feed_leveldata is no longer needed
 
 	star_collected = 0;
 
 	reset_player();
 	physics_pause();
-	render_feed_leveldata(&game.level);
 	player_move(game.level.a);
 	build_fgraph(game.level.func);
 }

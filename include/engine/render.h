@@ -6,6 +6,5 @@
 
 void render_init(void);
 void render(void);
-void render_feed_leveldata(const struct leveldata *data);
 
 #endif

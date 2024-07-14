@@ -13,20 +13,11 @@
 extern struct game game;
 
 
-// TODO use game.level instead
-static struct {
-	Color graph_color;
-	struct leveldata *leveldata;
-} rctx;
-
 Texture2D star_tex;
 Texture2D dest_tex;
 
 void render_init(void)
 {
-	rctx.graph_color = RED;
-	rctx.leveldata = malloc(sizeof *rctx.leveldata);
-	arraylist_clear(&rctx.leveldata->obstacles);
 
 	game.ngraphs = 1;
 	game.graphs = malloc(game.ngraphs * sizeof(graph_t));
@@ -50,10 +41,12 @@ static void render_obstacle(struct obstacle *obstacle)
 
 static void render_obstacles(void)
 {
-	if (rctx.leveldata == NULL)
+	if (sizeof game.level == 0)
 		return;
+	//if (rctx.leveldata == NULL)
+	//	return;
 
-	const struct arraylist *obstacles = &rctx.leveldata->obstacles;
+	const struct arraylist *obstacles = &game.level.obstacles;
 	if (obstacles->data == NULL)
 		return;
 
@@ -65,14 +58,14 @@ static void render_obstacles(void)
 
 static void render_destination(void)
 {
-	texture_draw(&dest_tex, rctx.leveldata->b, (Vector2){ 40, 40 }, 0,
+	texture_draw(&dest_tex, game.level.b, (Vector2){ 40, 40 }, 0,
 		     WHITE);
 }
 
 static void render_star(void)
 {
-	texture_draw(&star_tex, rctx.leveldata->star, (Vector2){ 30, 30 }, 0,
-		     WHITE);
+	texture_draw(&star_tex, game.level.star, (Vector2){ 30, 30 }, 0,
+			WHITE);
 }
 
 static void render_background(void)
@@ -115,9 +108,4 @@ void render(void)
 	// 	  (Vector2){ player->pos.x + player->body.debug.x,
 	// 		     player->pos.y + player->body.debug.y },
 	// 	  RED);
-}
-
-void render_feed_leveldata(const struct leveldata *data)
-{
-	memcpy(rctx.leveldata, data, sizeof *data);
 }

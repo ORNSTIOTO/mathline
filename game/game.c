@@ -47,6 +47,7 @@ void game_init(struct window *window)
 	game.window = window;
 	game.tip = malloc(32);
 	strcpy(game.tip, "press P to pause\npress R to restart");
+	//arraylist_clear(&game.level.obstacles); FIXME Uncomment in case of ghost (0,0) obstacles 
 
 	setup_camera();
 	tween_init();
