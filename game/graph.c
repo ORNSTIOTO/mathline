@@ -463,7 +463,7 @@ void render_graph(void)
 			Vector2Normalize((Vector2){ -delta.y, delta.x });
 
 		// The v texture coordinate of the segment (add up the length of all the segments so far)
-		const float v = prev_v + Vector2Length(delta);
+		const float v = prev_v + Vector2Length(delta) / graphtex.height * width/2;
 
 		// Make sure the start point has a normal
 		if (!tangent_set) {
@@ -541,5 +541,5 @@ void render_fgraph_old(float (*f)(float x), Color color)
 void graph_init(void)
 {
 	texture_load(&graphtex, "res/img/graphline.png");
-	SetTextureFilter(graphtex, TEXTURE_FILTER_BILINEAR);
+	//SetTextureFilter(graphtex, TEXTURE_FILTER_BILINEAR);
 }
