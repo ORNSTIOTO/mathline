@@ -84,9 +84,9 @@ static void keyboard_debug(int c)
 	case 'q':
 		add_tween((struct tween){
 			.t_type = EASE_IN_OUT,
-			.var = &game.player->pos.x,
-			.to = -100.0F,
-			.duration = 5});
+			.var = &game.level.star.state,
+			.to = 1.0F,
+			.duration = 1});
 		break;
 	default:
 		break;

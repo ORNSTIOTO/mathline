@@ -64,8 +64,8 @@ static void render_destination(void)
 
 static void render_star(void)
 {
-	texture_draw(&star_tex, game.level.star, (Vector2){ 30, 30 }, 0,
-			WHITE);
+	texture_draw(&star_tex, game.level.star.pos, (Vector2){ 30 + game.level.star.state*20, 30 + game.level.star.state*20 }, game.level.star.state*20,
+			(Color){255,255,255, (unsigned char)( (1-game.level.star.state) * 0xFF) });
 }
 
 static void render_background(void)
@@ -94,8 +94,8 @@ void render(void)
 	render_obstacles();
 	render_destination();
 
-	if (!level_star_collected())
-		render_star();
+	//if (!level_star_collected())
+	render_star();
 
 	const struct player *player = game.player;
 	const Vector2 size = { player->tex_size * 2, player->tex_size * 2 };

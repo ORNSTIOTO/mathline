@@ -28,6 +28,11 @@ enum levelfile_idx {
 
 static void star_collision(void)
 {
+	add_tween((struct tween){
+			.t_type = EASE_OUT,
+			.var = &game.level.star.state,
+			.to = 1.0F,
+			.duration = 1});
 	star_collected = 1;
 }
 
@@ -56,7 +61,7 @@ void reload_level(void)
 
 void level_control(void)
 {
-	if (player_collides_with(game.level.star))
+	if (player_collides_with(game.level.star.pos))
 		star_collision();
 
 	if (player_collides_with(game.level.b))
@@ -250,7 +255,7 @@ static void read_pair(struct lpar *lpar)
 	case LFIDX_STAR: {
 		const float x = read_number(lpar);
 		const float y = read_number(lpar);
-		lpar->ldata.star = (Vector2){ x, y };
+		lpar->ldata.star.pos = (Vector2){ x, y };
 		break;
 	}
 	case LFIDX_OBSTACLES: {
