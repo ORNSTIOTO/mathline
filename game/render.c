@@ -1,4 +1,5 @@
 #include "engine/render.h"
+#include "engine/window.h"
 #include "graph.h"
 #include "player.h"
 #include "engine/tex.h"
@@ -9,6 +10,7 @@
 #include <string.h>
 
 #define OBSTACLE_COLOR ORANGE
+#define GRIDLINES_WIDTH 10
 
 extern struct game game;
 
@@ -51,7 +53,7 @@ static void render_obstacles(void)
 		return;
 
 	for (size_t i = 0; i < arraylist_count(obstacles); ++i) {
-		struct obstacle *o = arraylist_get(obstacles, i);
+		//struct obstacle *o = arraylist_get(obstacles, i);
 		render_obstacle(arraylist_get(obstacles, i));
 	}
 }
@@ -84,6 +86,17 @@ static void render_background(void)
 		(Vector2){ game.window->screen_w / game.camera.zoom,
 			game.window->screen_h / game.camera.zoom },
 		0, WHITE);
+
+	for (int i = (int)(game.camera.target.x - game.window->screen_w/2/game.camera.zoom)/GRAPH_SCALE;
+		i < (int)(game.camera.target.x + game.window->screen_w/2/game.camera.zoom)/GRAPH_SCALE+1; i++) {
+		DrawLine(i * GRAPH_SCALE, -GRIDLINES_WIDTH,
+			i * GRAPH_SCALE, GRIDLINES_WIDTH, WHITE);
+	}
+	for (int i = (int)(game.camera.target.y - game.window->screen_h/2/game.camera.zoom)/GRAPH_SCALE;
+		i < (int)(game.camera.target.y + game.window->screen_h/2/game.camera.zoom)/GRAPH_SCALE+1; i++) {
+		DrawLine(-GRIDLINES_WIDTH, i * GRAPH_SCALE,
+			GRIDLINES_WIDTH, i * GRAPH_SCALE, WHITE);
+	}
 }
 
 void render(void)
