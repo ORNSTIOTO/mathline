@@ -1056,6 +1056,21 @@ void textbox_write(struct ui_object *textbox, char c)
 	text_write(text, c, tbox->box.cursor++);
 }
 
+void textbox_replace(struct ui_object *textbox, char *c)
+{
+	struct uie_textbox *tbox = &textbox->data->textbox;
+	struct ui_text *text = &tbox->text;
+	
+	for (size_t i = text->size; i > 0; i--) {
+		text_erase(text, i);
+	}
+	
+	tbox->box.cursor = 0;
+	for (size_t i = 0; i < strlen(c); i++) {
+		text_write(text, c[i], tbox->box.cursor++);
+	}
+}
+
 static void textbox_backspace(struct ui_object *textbox)
 {
 	struct uie_textbox *tbox = &textbox->data->textbox;

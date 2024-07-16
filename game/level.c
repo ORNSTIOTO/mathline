@@ -1,6 +1,7 @@
 #include "level.h"
 #include "engine/arraylist.h"
 #include "engine/tween.h"
+#include "engine/ui.h"
 #include "game.h"
 #include "player.h"
 #include "graph.h"
@@ -51,6 +52,7 @@ static void load_level(struct leveldata ldata)
 	reset_player();
 	physics_pause();
 	player_move(game.level.a);
+	textbox_replace(ui_get("formula"), game.level.func);
 	build_fgraph(game.level.func);
 }
 
