@@ -171,6 +171,9 @@ struct ui_descriptor {
 	} _meta;
 
 	Vector2 _abs_position, _abs_size; // relative to root, not the parent
+
+
+	int custom_data; // used for level selection
 };
 
 /**

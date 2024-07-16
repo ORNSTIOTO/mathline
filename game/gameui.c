@@ -33,14 +33,7 @@ static void callback_levelbtn_clicked(void *a)
 	struct evtbtn_args *args = a;
 	const struct ui_object *btn = args->button;
 
-	const float x =
-		btn->data->position.offset.x / (btn->data->size.offset.x + 16);
-	const float y =
-		btn->data->position.offset.y / (btn->data->size.offset.y + 16);
-
-	const int lvln = (int)x + (int)y * 5 + 2 + 1;
-
-	load_level_num(lvln);
+	load_level_num(btn->data->custom_data);
 	show_levelui();
 }
 
@@ -385,7 +378,7 @@ static void load_mainmenu(void)
 	bckg->data->size = (UDim2){ { 0, 0 }, { 1, 1 } };
 	ui_set_image(bckg, "res/img/ui/background_lvl.png");
 
-	for (int i = 0; i < 8; ++i) {
+	for (int i = 0; i < 10; ++i) {
 		char name[16];
 		snprintf(name, 16, "%d:%d", i + 1, i * 11);
 
@@ -395,15 +388,31 @@ static void load_mainmenu(void)
 		struct ui_object *btn =
 			ui_create(UIC_IMAGEBUTTON, name, bckg).object;
 		btn->data->imagebutton.img.tint = WHITE;
-		btn->data->size = (UDim2){ { 100, 100 }, { 0, 0 } };
+		btn->data->size = (UDim2){ { 100, 109 }, { 0, 0 } };
 		btn->data->anchor = (Vector2){ 0.5F, 0.5F };
 		btn->data->position =
 			(UDim2){ { (float)x * (btn->data->size.offset.x + 16),
-				   (float)y * (btn->data->size.offset.y + 16) },
+				   ((float)y-1) * (btn->data->size.offset.y + 16 + 32) + (float)((i+y)%2==0 ? 50 : 0) },
 				 { 0.5F, 0.5F } };
 		ui_set_image(btn, "res/img/ui/lvlnumbtn.png");
+		btn->data->custom_data = i+1;
 		evt_connect(&btn->data->imagebutton.btn.events.clicked,
 			    callback_levelbtn_clicked);
+
+		char sname[16];
+		snprintf(sname, 16, "%d_what", i * 11);
+
+		struct ui_object *stars =
+			ui_create(UIC_IMAGE, sname, btn).object;
+		//stars->data->imagebutton.img.tint = WHITE;
+		stars->data->size = (UDim2){ { 100, 52 }, { 0, 0 } };
+		stars->data->anchor = (Vector2){ 0.5F, 0.5F };
+		stars->data->position =
+			(UDim2){ { 0,
+				   72 },
+				 { 0.5F, 0.5F } };
+		ui_set_image(stars, "res/img/ui/stars0.png");
+
 
 		char text[16];
 		snprintf(text, 16, "%d", i + 1);
@@ -631,7 +640,7 @@ static void load_levelui(void)
 	levelui = canvas;
 }
 
-void load_victoryui(void)
+static void load_victoryui(void)
 {
 	victoryui = ui_create(UIC_FRAME, "victoryui", levelui).object;
 	victoryui->data->transparency = 1;
