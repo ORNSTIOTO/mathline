@@ -22,9 +22,10 @@ void tween_init() {
 
 void tween_update(float fdt) {
         //printf("\e[31msizze, %i\e[0m\n", arraylist_count(&game.tweens));
-        for (size_t i = offset; i < arraylist_count(&game.tweens); i++) {
+        for (size_t i = 0; i < arraylist_count(&game.tweens); i++) {
                 
                 struct tween *tw = arraylist_get(&game.tweens, i);
+                if (tw->ended) continue;
                 
                 if (*tw->var == tw->to) {
                         end_tween(i);
@@ -75,13 +76,15 @@ size_t add_tween(struct tween tween) {
         return arraylist_pushback(&game.tweens, &tween); 
 }
 
-
-// https://easings.net/
-
+// not ready for massive use as long as arraylist doesn't work as intended
 void end_tween(size_t idx) {
-        offset++;
+        struct tween *tw = arraylist_get(&game.tweens, idx);
+        tw->ended = 1;
+        //offset++;
         //arraylist_remove(&game.tweens, idx);
 }
+
+// https://easings.net/
 
 float easeInSine(float x) {
         return 1 - cosf((x * PI) / 2);

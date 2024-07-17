@@ -15,6 +15,7 @@ struct tween {
         float from, to;
         float duration;
         float _progress;
+        _Bool ended;
 };
 
 void tween_update(float fdt);

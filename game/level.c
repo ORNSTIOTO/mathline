@@ -14,6 +14,7 @@
 #include <stdlib.h>
 
 _Bool star_collected = 0;
+size_t star_tween;
 
 //struct leveldata data;
 extern struct game game;
@@ -29,12 +30,21 @@ enum levelfile_idx {
 
 static void star_collision(void)
 {
-	add_tween((struct tween){
+	if (!star_collected) {
+		star_tween = add_tween((struct tween){
 			.t_type = EASE_OUT,
 			.var = &game.level.star.state,
 			.to = 1.0F,
 			.duration = 1});
+	}
 	star_collected = 1;
+}
+
+static void reset_star(void)
+{
+	star_collected = 0;
+	end_tween(star_tween);
+	game.level.star.state = 0;
 }
 
 static void dest_collision(void)
@@ -47,7 +57,7 @@ static void load_level(struct leveldata ldata)
 	//data = ldata;
 	game.level = ldata; // old render_feed_leveldata is no longer needed
 
-	star_collected = 0;
+	reset_star();
 
 	reset_player();
 	physics_pause();
