@@ -22,7 +22,7 @@ CFLAGS+=-I$(IDIR)/
 CFLAGS+=-std=gnu2x -Wall -Wextra -ggdb
 CFLAGS+=-O3
 
-LDFLAGS+=-mwindows
+#LDFLAGS+=-mwindows
 
 LIBS:=-lraylib -lm
 

@@ -11,4 +11,6 @@ void show_victoryui(void);
 
 void highlight_skin_sel_button(void);
 
+void update_level_button(int idx);
+
 #endif

@@ -68,6 +68,8 @@ static void load_level(struct leveldata ldata)
 
 void reload_level(void)
 {
+	// game.level is not constant through the level since ball state changes here,
+	// but as long as reset_star() is called it should work properly
 	load_level(game.level);
 }
 
@@ -89,6 +91,11 @@ void level_finish(void)
 {
 	physics_pause();
 	show_victoryui();
+
+	game.game_progress[game.level.level_number-1] = (char)(1 + star_collected);
+	update_level_button(game.level.level_number-1);
+	
+	save_progress();
 }
 
 struct lpar {
@@ -280,7 +287,7 @@ static void read_pair(struct lpar *lpar)
 	}
 }
 
-static int load_level_file(const char *filename)
+static int load_level_file(const char *filename, int n)
 {
 	char *file = LoadFileText(filename);
 
@@ -291,7 +298,8 @@ static int load_level_file(const char *filename)
 		.file = file,
 		.idx = 0,
 		.ldata = { .obstacles = arraylist_create_preloaded(
-				   sizeof(struct obstacle), 8, 1), },
+				   sizeof(struct obstacle), 8, 1), 
+				   .level_number = n },
 	};
 
 	while (lpar.idx < strlen(lpar.file)) {
@@ -308,5 +316,5 @@ int load_level_num(int n)
 	char filename[16];
 	snprintf(filename, 16, "res/lvl/%d.lvl", n);
 
-	return load_level_file(filename);
+	return load_level_file(filename, n);
 }

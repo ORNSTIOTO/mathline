@@ -1,4 +1,4 @@
- #include "game.h"
+#include "game.h"
 #include "gameui.h"
 #include "level.h"
 #include "graph.h"
@@ -12,6 +12,8 @@
 #include <engine/tex.h>
 #include <math.h>
 #include <stdint.h>
+
+extern struct game game;
 
 struct ui_object *screenmenu;
 struct ui_object *mainmenu;
@@ -378,7 +380,7 @@ static void load_mainmenu(void)
 	bckg->data->size = (UDim2){ { 0, 0 }, { 1, 1 } };
 	ui_set_image(bckg, "res/img/ui/background_lvl.png");
 
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < LEVELS; ++i) {
 		char name[16];
 		snprintf(name, 16, "%d:%d", i + 1, i * 11);
 
@@ -399,6 +401,8 @@ static void load_mainmenu(void)
 		evt_connect(&btn->data->imagebutton.btn.events.clicked,
 			    callback_levelbtn_clicked);
 
+
+		// update_level_button() depends on this name
 		char sname[16];
 		snprintf(sname, 16, "%d_what", i * 11);
 
@@ -411,7 +415,15 @@ static void load_mainmenu(void)
 			(UDim2){ { 0,
 				   72 },
 				 { 0.5F, 0.5F } };
-		ui_set_image(stars, "res/img/ui/stars0.png");
+
+		char path[32]; //21
+		if ((int)(game.game_progress[i]) > 3) {
+			printf("\e[31mSave file is corrupted.\e[0m\n");
+			strcpy(path, "res/img/ui/stars0.png");
+		} else {
+			snprintf(path, 32, "res/img/ui/stars%i.png", (int)(game.game_progress[i]));
+		}
+		ui_set_image(stars, path);
 
 
 		char text[16];
@@ -444,6 +456,17 @@ static void load_mainmenu(void)
 		    callback_mm_back_button);
 
 	mainmenu = bckg;
+}
+void update_level_button(int idx)
+{
+	char sname[16];
+	snprintf(sname, 16, "%d_what", idx * 11);
+	char path[32]; //21
+	if ((int)(game.game_progress[idx]) > 3)
+		printf("\e[31mNot expected %i stars.\e[0m\n", (int)(game.game_progress[idx]));
+	snprintf(path, 32, "res/img/ui/stars%i.png", (int)(game.game_progress[idx]));
+	ui_set_image(ui_get(sname), path);
+	
 }
 
 static void load_levelui(void)

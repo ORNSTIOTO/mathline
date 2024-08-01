@@ -4,3 +4,7 @@ bin/
 
 *.o
 /export
+
+res/save.bin
+
+mathline.code-workspace

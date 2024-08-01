@@ -62,6 +62,8 @@ void game_init(struct window *window)
 
 	//build_fgraph("x*sin(x)+(2-x)");
 
+	read_progress();
+
 	load_gameui();
 	show_screenmenu();
 }
@@ -226,4 +228,55 @@ int game_exit(void)
 {
 	CloseWindow();
 	exit(0);
+}
+
+
+
+
+void save_progress(void)
+{
+	FILE *file;
+	file = fopen("res/save.bin", "wb");// TODO change to wb and rb
+
+	printf("\e[31mReady for save: ");
+	for (size_t i = 0; i < sizeof game.game_progress; i++) {
+		printf("%i", (int) game.game_progress[i]);
+		// if (!game.game_progress[i]) {
+		// 	game.game_progress[i] = 0;
+		// }
+	}
+	printf("\e[0m\n");
+
+	fwrite(game.game_progress, 1, LEVELS, file);
+	fclose(file);
+}
+
+void read_progress(void)
+{
+	FILE *file;
+	file = fopen("res/save.bin", "rb");
+	
+	if (file == NULL) {
+		printf("No save file found.");
+		return;
+	}
+
+	char data[LEVELS] = "";
+	fread(data, sizeof(char), LEVELS, file);
+	//data[LEVELS] = '\0';
+	fclose(file);
+
+	strcpy(game.game_progress, data); // terminates at 0
+	//memset(game.game_progress, 0, LEVELS*sizeof(char));
+
+	for (size_t i = 0; i < LEVELS; i++) {
+		game.game_progress[i] = data[i];
+	}
+	//memcpy(game.game_progress, &data[0], LEVELS); // also works for chars
+
+	printf("\e[31mRead the save: ");
+	for (size_t i = 0; i < sizeof game.game_progress; i++) {
+		printf("%i", (int) game.game_progress[i]);
+	}
+	printf("\e[0m\n");
 }

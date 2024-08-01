@@ -18,6 +18,8 @@ struct leveldata {
 		Vector2 pos;
 		float state; // state of animation, 0-1
 	} star;
+
+	int level_number;
 };
 
 int load_level_num(int n);
