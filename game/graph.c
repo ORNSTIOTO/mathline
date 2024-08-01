@@ -463,7 +463,7 @@ void render_graph(void)
 			Vector2Normalize((Vector2){ -delta.y, delta.x });
 
 		// The v texture coordinate of the segment (add up the length of all the segments so far)
-		const float v = prev_v + Vector2Length(delta) / graphtex.height * width/2;
+		const float v = prev_v + Vector2Length(delta) / width*10 / (float)graphtex.width;
 
 		// Make sure the start point has a normal
 		if (!tangent_set) {
@@ -488,16 +488,16 @@ void render_graph(void)
 		rlColor4ub(255, 255, 255, 255);
 		rlNormal3f(0.0F, 0.0F, 1.0F);
 
-		rlTexCoord2f(0, prev_v);
+		rlTexCoord2f(prev_v, 0);
 		rlVertex2f(prevNegNormal.x, prevNegNormal.y);
 
-		rlTexCoord2f(1, prev_v);
+		rlTexCoord2f(prev_v, 1);
 		rlVertex2f(prevPosNormal.x, prevPosNormal.y);
 
-		rlTexCoord2f(1, v);
+		rlTexCoord2f(v, 1);
 		rlVertex2f(currentPosNormal.x, currentPosNormal.y);
 
-		rlTexCoord2f(0, v);
+		rlTexCoord2f(v, 0);
 		rlVertex2f(currentNegNormal.x, currentNegNormal.y);
 		rlEnd();
 
